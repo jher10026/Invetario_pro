@@ -1,0 +1,193 @@
+<div class="app-container">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Contenido Principal -->
+  <main class="main-content">
+    <!-- Header -->
+    <div class="content-header">
+      <div>
+        <h1>🏷️ Categorías</h1>
+        <p style="color: var(--text-secondary); margin-top: 0.5rem;">
+          Gestiona las categorías de tus productos
+        </p>
+      </div>
+      <button class="btn btn-primary" (click)="abrirModalAgregar()">
+        <span>➕</span>
+        <span>Nueva Categoría</span>
+      </button>
+    </div>
+
+    <!-- Grid de Categorías -->
+    <div *ngIf="categorias.length > 0; else sinCategorias" class="categories-grid">
+      <div
+        *ngFor="let categoria of categorias"
+        class="category-card"
+        [style.--category-color]="categoria.color"
+      >
+        <!-- Icono con Iniciales o Texto -->
+        <div 
+          class="category-icon" 
+          [style.background]="categoria.color + '20'"
+          [style.color]="categoria.color"
+          style="font-weight: 700; font-size: 1.25rem;"
+        >
+          {{ categoria.icono || obtenerIniciales(categoria.nombre) }}
+        </div>
+
+        <!-- Header -->
+        <div class="category-header">
+          <div style="flex: 1;">
+            <h3 class="category-name">{{ categoria.nombre }}</h3>
+            <p class="category-count">
+              {{ categoria.cantidadProductos }} 
+              {{ categoria.cantidadProductos === 1 ? 'producto' : 'productos' }}
+            </p>
+          </div>
+
+          <!-- Acciones -->
+          <div class="category-actions">
+            <button
+              class="action-btn edit"
+              (click)="abrirModalEditar(categoria)"
+              title="Editar"
+            >
+              ✏️
+            </button>
+            <button
+              class="action-btn delete"
+              (click)="eliminarCategoria(categoria)"
+              title="Eliminar"
+            >
+              🗑️
+            </button>
+          </div>
+        </div>
+
+        <!-- Barra de color -->
+        <div style="margin-top: 1rem; height: 4px; background: var(--bg-primary); border-radius: 2px; overflow: hidden;">
+          <div
+            [style.width.%]="categoria.cantidadProductos > 0 ? 100 : 0"
+            [style.background]="categoria.color"
+            style="height: 100%; transition: width 0.3s;"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sin categorías -->
+    <ng-template #sinCategorias>
+      <div class="table-container">
+        <div style="padding: 4rem; text-align: center; color: var(--text-secondary);">
+          <div style="font-size: 4rem; margin-bottom: 1rem;">🏷️</div>
+          <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">No hay categorías</h3>
+          <p style="margin-bottom: 1.5rem;">Crea tu primera categoría para organizar tus productos</p>
+          <button class="btn btn-primary" (click)="abrirModalAgregar()">
+            <span>➕</span>
+            <span>Crear Primera Categoría</span>
+          </button>
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- Información adicional -->
+    <div *ngIf="categorias.length > 0" style="margin-top: 2rem;">
+      <div class="table-container" style="padding: 1.5rem;">
+        <h3 style="margin-bottom: 1rem; font-size: 1.125rem;">💡 Consejos</h3>
+        <ul style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.8; padding-left: 1.5rem;">
+          <li>Organiza tus productos en categorías para facilitar su búsqueda</li>
+          <li>Asigna colores distintivos a cada categoría para identificarlas rápidamente</li>
+          <li>Puedes usar texto corto o iniciales como identificador de la categoría</li>
+          <li>Al eliminar una categoría con productos, estos quedarán como "Sin categoría"</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal de Agregar/Editar Categoría -->
+<div class="modal" [class.active]="mostrarModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>{{ modoEdicion ? '✏️ Editar Categoría' : '➕ Nueva Categoría' }}</h2>
+    </div>
+
+    <form (ngSubmit)="guardarCategoria()">
+      <!-- Nombre -->
+      <div class="form-group">
+        <label class="form-label">Nombre de la Categoría</label>
+        <input
+          type="text"
+          class="form-input"
+          [(ngModel)]="formulario.nombre"
+          name="nombre"
+          placeholder="Ej: Electrónica"
+          required
+          maxlength="50"
+        />
+      </div>
+
+      <!-- Identificador (Texto corto) -->
+      <div class="form-group">
+        <label class="form-label">Identificador (Opcional - Máx. 3 caracteres)</label>
+        <input
+          type="text"
+          class="form-input"
+          [(ngModel)]="formulario.icono"
+          name="icono"
+          placeholder="Ej: ELE o 💻 (Dejar vacío para usar iniciales)"
+          maxlength="3"
+          style="text-align: center; font-size: 1.25rem; font-weight: 700;"
+        />
+        <small style="color: var(--text-secondary); font-size: 0.75rem; display: block; margin-top: 0.5rem;">
+          Puedes escribir texto corto, emoji o dejar vacío para usar las iniciales del nombre
+        </small>
+      </div>
+
+      <!-- Color -->
+      <div class="form-group">
+        <label class="form-label">Color</label>
+        <input
+          type="color"
+          class="form-input"
+          [(ngModel)]="formulario.color"
+          name="color"
+          required
+        />
+      </div>
+
+      <!-- Preview -->
+      <div class="form-group">
+        <label class="form-label">Vista Previa</label>
+        <div style="padding: 1.5rem; background: var(--bg-primary); border-radius: var(--radius-md); text-align: center;">
+          <div
+            style="width: 4rem; height: 4rem; margin: 0 auto 1rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700;"
+            [style.background]="formulario.color + '20'"
+            [style.color]="formulario.color"
+          >
+            {{ formulario.icono || obtenerIniciales(formulario.nombre || 'CAT') }}
+          </div>
+          <div style="font-weight: 600; font-size: 1.125rem;">
+            {{ formulario.nombre || 'Nombre de categoría' }}
+          </div>
+          <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
+            0 productos
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="cerrarModal()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-save">
+          {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Componente Toast -->
+<app-toast></app-toast>

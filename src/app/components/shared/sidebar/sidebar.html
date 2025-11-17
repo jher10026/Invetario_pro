@@ -1,0 +1,66 @@
+<!-- Mobile Header -->
+<div class="mobile-header">
+  <button class="menu-toggle" (click)="toggleSidebar()" aria-label="Toggle menu">
+    <span>☰</span>
+  </button>
+  <div class="mobile-header-title">
+    <span class="logo-icon-mobile">📦</span>
+    <span class="mobile-title-main">InventarioPro</span>
+  </div>
+  <div class="user-avatar-mobile">
+    {{ obtenerIniciales() }}
+  </div>
+</div>
+
+<!-- Backdrop -->
+<div class="sidebar-backdrop" [class.active]="sidebarAbierto" (click)="cerrarSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" [class.open]="sidebarAbierto">
+  <!-- Header COMPACTO -->
+  <div class="sidebar-header-compact">
+    <div class="logo-icon">📦</div>
+    <div class="logo-text-compact">
+      <h1>Inventario<span class="accent">Pro</span></h1>
+      <p class="version">v3.1.0</p>
+    </div>
+  </div>
+
+  <!-- Navegación -->
+  <nav class="sidebar-nav">
+    <div class="nav-section-title">MENÚ</div>
+    
+    <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" (click)="cerrarSidebar()">
+      <span>📊</span>
+      <span>Dashboard</span>
+    </a>
+
+    <a routerLink="/inventario" routerLinkActive="active" class="nav-item" (click)="cerrarSidebar()">
+      <span>📦</span>
+      <span>Inventario</span>
+    </a>
+
+    <a routerLink="/categorias" routerLinkActive="active" class="nav-item" (click)="cerrarSidebar()">
+      <span>🏷️</span>
+      <span>Categorías</span>
+    </a>
+
+    <!-- Soporte (solo usuarios) -->
+    <div class="nav-section-title" *ngIf="esUsuario()">SOPORTE</div>
+    
+    <a class="nav-item" (click)="abrirReporte()" *ngIf="esUsuario()">
+      <span>📝</span>
+      <span>Reportar Problema</span>
+    </a>
+  </nav>
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <div class="nav-item logout-btn" (click)="logout()">
+      <span>🚪</span>
+      <span>Salir</span>
+    </div>
+  </div>
+</aside>
+
+<app-reporte-modal></app-reporte-modal>

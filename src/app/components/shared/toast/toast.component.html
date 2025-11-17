@@ -1,0 +1,17 @@
+<div class="toast-container">
+  <div
+    *ngFor="let toast of toasts"
+    class="toast show"
+    [ngClass]="toast.tipo"
+  >
+    <span class="toast-icon">{{ obtenerIcono(toast.tipo) }}</span>
+    <span class="toast-message">{{ toast.mensaje }}</span>
+    <button
+      class="toast-close"
+      (click)="cerrar(toast.id)"
+      style="background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0; margin-left: 0.5rem; font-size: 1.25rem; transition: color 0.2s;"
+    >
+      ×
+    </button>
+  </div>
+</div>

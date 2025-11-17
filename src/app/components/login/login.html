@@ -1,0 +1,124 @@
+<div class="login-container">
+  <div class="login-box fade-in">
+    <!-- Logo -->
+    <div class="login-logo">
+      📦
+    </div>
+
+    <!-- Título -->
+    <h1>{{ esRegistro ? 'Crear Cuenta' : 'Inventario Pro' }}</h1>
+
+    <!-- Mensaje de éxito -->
+    <div *ngIf="mensaje" style="background: rgba(34, 197, 94, 0.15); color: #4ade80; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.875rem;">
+      {{ mensaje }}
+    </div>
+
+    <!-- Mensaje de error -->
+    <div *ngIf="error" style="background: rgba(239, 68, 68, 0.15); color: #f87171; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.875rem;">
+      {{ error }}
+    </div>
+
+    <!-- Formulario de Registro -->
+    <form *ngIf="esRegistro" (ngSubmit)="onRegister()">
+      <div class="form-group">
+        <input 
+          type="text" 
+          class="form-input" 
+          placeholder="Nombre completo"
+          [(ngModel)]="nombre"
+          name="nombre"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <input 
+          type="email" 
+          class="form-input" 
+          placeholder="Email (Solo Gmail permitido)"
+          [(ngModel)]="email"
+          name="email"
+          required
+        />
+        <small style="color: var(--text-secondary); font-size: 0.75rem; display: block; margin-top: 0.5rem;">
+          Ejemplo: tu.correo@gmail.com
+        </small>
+      </div>
+
+      <div class="form-group">
+        <input 
+          type="password" 
+          class="form-input" 
+          placeholder="Contraseña (mín. 6 caracteres)"
+          [(ngModel)]="password"
+          name="password"
+          required
+        />
+      </div>
+
+      <button 
+        type="submit" 
+        class="login-btn"
+        [disabled]="cargando"
+      >
+        {{ cargando ? 'Registrando...' : 'Crear Cuenta' }}
+      </button>
+    </form>
+
+    <!-- Formulario de Login -->
+    <form *ngIf="!esRegistro" (ngSubmit)="onLogin()">
+      <div class="form-group">
+        <input 
+          type="text" 
+          class="form-input" 
+          placeholder="Usuario o Email"
+          [(ngModel)]="email"
+          name="email"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <input 
+          type="password" 
+          class="form-input" 
+          placeholder="Contraseña"
+          [(ngModel)]="password"
+          name="password"
+          required
+        />
+      </div>
+
+      <button 
+        type="submit" 
+        class="login-btn"
+        [disabled]="cargando"
+      >
+        {{ cargando ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
+      </button>
+
+      <!-- Información de Admin -->
+      <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(99, 102, 241, 0.1); border-radius: 0.5rem; border-left: 3px solid var(--accent-primary);">
+        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+          <strong style="color: var(--text-primary);">👤 Acceso Administrador:</strong>
+        </p>
+        <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
+          Usuario: <strong style="color: var(--accent-primary);">admin</strong> | 
+          Contraseña: <strong style="color: var(--accent-primary);">12345</strong>
+        </p>
+      </div>
+    </form>
+
+    <!-- Link para cambiar entre login/registro -->
+    <div class="register-link">
+      <p *ngIf="!esRegistro">
+        ¿No tienes cuenta? 
+        <a (click)="cambiarModo()" style="cursor: pointer;">Regístrate aquí</a>
+      </p>
+      <p *ngIf="esRegistro">
+        ¿Ya tienes cuenta? 
+        <a (click)="cambiarModo()" style="cursor: pointer;">Inicia sesión</a>
+      </p>
+    </div>
+  </div>
+</div>
