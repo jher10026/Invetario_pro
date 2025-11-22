@@ -1,1 +1,164 @@
-<p>login works!</p>
+<!-- ===================================
+     TEMPLATE DEL LOGIN
+     Archivo: src/app/components/login/login.component.html
+     =================================== -->
+
+<div class="login-container">
+  <div class="login-box">
+    <!-- Logo -->
+    <div class="login-logo">📦</div>
+
+    <!-- Formulario de LOGIN -->
+    <div *ngIf="mostrarLogin()">
+      <h1>Bienvenido</h1>
+
+      <!-- Mensajes -->
+      <div *ngIf="mensajeError()" class="mensaje error">
+        {{ mensajeError() }}
+      </div>
+      <div *ngIf="mensajeExito()" class="mensaje success">
+        {{ mensajeExito() }}
+      </div>
+
+      <!-- Formulario -->
+      <form (ngSubmit)="handleLogin()">
+        <div class="form-group">
+          <input
+            type="text"
+            class="form-input"
+            [ngModel]="loginUsername()"
+            (ngModelChange)="loginUsername.set($event)"
+            name="username"
+            placeholder="Usuario (admin o user)"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <input
+            type="password"
+            class="form-input"
+            [ngModel]="loginPassword()"
+            (ngModelChange)="loginPassword.set($event)"
+            name="password"
+            placeholder="Contraseña (12345)"
+            required
+          />
+        </div>
+
+        <button type="submit" class="login-btn">
+          Iniciar Sesión
+        </button>
+      </form>
+
+      <!-- Link a registro -->
+      <div class="register-link">
+        ¿No tienes cuenta?
+        <a href="#" (click)="alternarFormulario(); $event.preventDefault()">
+          Regístrate
+        </a>
+      </div>
+    </div>
+
+    <!-- Formulario de REGISTRO -->
+    <div *ngIf="!mostrarLogin()">
+      <h1>Crear Cuenta</h1>
+
+      <!-- Mensajes -->
+      <div *ngIf="mensajeError()" class="mensaje error">
+        {{ mensajeError() }}
+      </div>
+      <div *ngIf="mensajeExito()" class="mensaje success">
+        {{ mensajeExito() }}
+      </div>
+
+      <!-- Formulario -->
+      <form (ngSubmit)="handleRegistro()">
+        <div class="form-group">
+          <input
+            type="text"
+            class="form-input"
+            [ngModel]="registroName()"
+            (ngModelChange)="registroName.set($event)"
+            name="name"
+            placeholder="Nombre completo"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <input
+            type="email"
+            class="form-input"
+            [ngModel]="registroEmail()"
+            (ngModelChange)="registroEmail.set($event)"
+            name="email"
+            placeholder="Correo electrónico"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <input
+            type="text"
+            class="form-input"
+            [ngModel]="registroUsername()"
+            (ngModelChange)="registroUsername.set($event)"
+            name="registerUser"
+            placeholder="Nombre de usuario"
+            minlength="4"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <input
+            type="password"
+            class="form-input"
+            [ngModel]="registroPassword()"
+            (ngModelChange)="registroPassword.set($event)"
+            name="registerPass"
+            placeholder="Contraseña"
+            minlength="5"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <input
+            type="password"
+            class="form-input"
+            [ngModel]="registroPasswordConfirm()"
+            (ngModelChange)="registroPasswordConfirm.set($event)"
+            name="registerPassConfirm"
+            placeholder="Confirmar contraseña"
+            required
+          />
+        </div>
+
+        <button type="submit" class="login-btn">
+          Registrarse
+        </button>
+      </form>
+
+      <!-- Link a login -->
+      <div class="register-link">
+        ¿Ya tienes cuenta?
+        <a href="#" (click)="alternarFormulario(); $event.preventDefault()">
+          Inicia Sesión
+        </a>
+      </div>
+    </div>
+
+    <!-- Botón limpiar datos -->
+    <div style="margin-top: 1rem;">
+      <button
+        type="button"
+        (click)="limpiarDatos()"
+        class="btn-clear"
+      >
+        ¿Problemas con permisos? Limpiar datos
+      </button>
+    </div>
+  </div>
+</div>

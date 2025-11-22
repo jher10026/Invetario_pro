@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-toast',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './toast.html',
-  styleUrl: './toast.css',
+  styleUrl: './toast.css'
 })
 export class Toast {
-
+  // Por ahora vacío, lo implementaremos en la siguiente fase
 }

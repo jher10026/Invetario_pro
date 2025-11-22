@@ -1,0 +1,31 @@
+/* ===================================
+   ESTILOS DEL COMPONENTE RAÍZ
+   Archivo: src/app/app.css
+   =================================== */
+
+.app-wrapper {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  scroll-behavior: smooth;
+}
+
+@media (max-width: 768px) {
+  .app-wrapper {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .main-content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+  }
+}

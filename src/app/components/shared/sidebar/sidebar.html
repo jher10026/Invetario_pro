@@ -1,1 +1,32 @@
-<p>sidebar works!</p>
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon">📦</div>
+    <div class="logo-text">
+      <h1>Inventario<span class="accent">Pro</span></h1>
+      <p>v3.1.0</p>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-title">Menú</div>
+    <a class="nav-item" routerLink="/dashboard" routerLinkActive="active">
+      <span>📊</span>
+      <span>Dashboard</span>
+    </a>
+    <a class="nav-item" routerLink="/inventario" routerLinkActive="active">
+      <span>📦</span>
+      <span>Inventario</span>
+    </a>
+    <a class="nav-item" routerLink="/categorias" routerLinkActive="active">
+      <span>🏷️</span>
+      <span>Categorías</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="nav-item logout-btn" (click)="logout()">
+      <span>🚪</span>
+      <span>Salir</span>
+    </button>
+  </div>
+</aside>
