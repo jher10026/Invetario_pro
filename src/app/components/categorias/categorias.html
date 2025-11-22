@@ -1,1 +1,108 @@
-<p>categorias works!</p>
+<!-- ===================================
+     TEMPLATE DE CATEGORÍAS
+     Archivo: src/app/components/categorias/categorias.component.html
+     =================================== -->
+
+<div class="categorias-container">
+  <!-- Header -->
+  <div class="content-header">
+    <h1>Categorías</h1>
+    <div class="user-avatar">{{ iniciales }}</div>
+  </div>
+
+  <!-- Grid de categorías -->
+  <div class="categories-grid">
+    <div *ngIf="categorias().length === 0" class="no-categories">
+      <p>No hay categorías aún</p>
+    </div>
+
+    <div
+      *ngFor="let categoria of categorias()"
+      class="category-card"
+    >
+      <div class="category-header">
+        <div class="category-color" [style.background]="categoria.color"></div>
+        <div class="category-info">
+          <h3 [style.color]="categoria.color">{{ categoria.nombre }}</h3>
+          <p>{{ obtenerCantidadProductos(categoria.nombre) }} producto(s)</p>
+        </div>
+      </div>
+
+      <div *ngIf="esAdmin()" class="category-actions">
+        <button
+          class="btn-icon"
+          (click)="abrirModalEditar(categoria)"
+          title="Editar"
+        >
+          ✏️
+        </button>
+        <button
+          class="btn-icon delete"
+          (click)="eliminarCategoria(categoria.id, categoria.nombre)"
+          title="Eliminar"
+        >
+          🗑️
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botón flotante -->
+  <button
+    *ngIf="esAdmin()"
+    class="add-btn"
+    (click)="abrirModalNuevo()"
+    title="Nueva Categoría"
+  >
+    +
+  </button>
+</div>
+
+<!-- MODAL -->
+<div *ngIf="mostrarModal()" class="modal-overlay" (click)="cerrarModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editandoCategoria() ? 'Editar Categoría' : 'Nueva Categoría' }}</h2>
+      <button class="close-btn" (click)="cerrarModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nombre</label>
+        <input
+          type="text"
+          class="form-input"
+          [ngModel]="formCategoria().nombre"
+          (ngModelChange)="actualizarForm('nombre', $event)"
+          placeholder="Ej: Gaming"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Color</label>
+        <div class="color-picker-container">
+          <input
+            type="color"
+            class="color-input"
+            [ngModel]="formCategoria().color"
+            (ngModelChange)="actualizarForm('color', $event)"
+          />
+          <span class="color-code">{{ formCategoria().color }}</span>
+        </div>
+      </div>
+
+      <div class="color-preview">
+        <div
+          class="preview-box"
+          [style.background]="formCategoria().color"
+        ></div>
+        <span>Vista previa</span>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-save" (click)="guardarCategoria()">Guardar</button>
+    </div>
+  </div>
+</div>

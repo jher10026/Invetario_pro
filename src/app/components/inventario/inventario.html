@@ -1,1 +1,219 @@
-<p>inventario works!</p>
+<!-- ===================================
+     TEMPLATE DEL INVENTARIO
+     Archivo: src/app/components/inventario/inventario.component.html
+     =================================== -->
+
+<div class="inventario-container">
+  <!-- Header -->
+  <div class="content-header">
+    <h1>Inventario</h1>
+    <div class="user-avatar">{{ iniciales }}</div>
+  </div>
+
+  <!-- Tabla de productos -->
+  <div class="table-container">
+    <div class="table-header">
+      <h2>📋 Lista de Productos</h2>
+      <button
+        *ngIf="esAdmin()"
+        class="btn btn-primary"
+        (click)="abrirModalNuevo()"
+      >
+        ➕ Nuevo
+      </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters">
+      <input
+        type="text"
+        class="search-input"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+        placeholder="🔍 Buscar producto..."
+      />
+      
+      <select
+        class="select-input"
+        [ngModel]="categoriaSeleccionada()"
+        (ngModelChange)="categoriaSeleccionada.set($event)"
+      >
+        <option value="">Todas las Categorías</option>
+        <option *ngFor="let cat of categorias()" [value]="cat.nombre">
+          {{ cat.nombre }}
+        </option>
+      </select>
+
+      <select
+        class="select-input"
+        [ngModel]="estadoSeleccionado()"
+        (ngModelChange)="estadoSeleccionado.set($event)"
+      >
+        <option value="">Todos los Estados</option>
+        <option value="disponible">En Stock</option>
+        <option value="bajo">Stock Bajo</option>
+        <option value="agotado">Agotado</option>
+      </select>
+
+      <select
+        class="select-input"
+        [ngModel]="ordenamiento()"
+        (ngModelChange)="ordenamiento.set($event)"
+      >
+        <option value="recent">Más Recientes</option>
+        <option value="oldest">Más Antiguos</option>
+        <option value="name">Por Nombre</option>
+        <option value="price">Por Precio</option>
+      </select>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Producto / Fecha</th>
+            <th>Categoría</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="productosFiltrados().length === 0">
+            <td colspan="5" class="empty-state">
+              No se encontraron productos
+            </td>
+          </tr>
+
+          <tr *ngFor="let producto of productosFiltrados()" class="product-row">
+            <td>
+              <span class="product-name">{{ producto.nombre }}</span>
+              <span class="product-date">
+                Ingreso: {{ producto.fecha | date: 'dd/MM/yyyy' }}
+              </span>
+            </td>
+            <td>
+              <span
+                class="badge"
+                [style]="'background: ' + obtenerColorCategoria(producto.categoria) + '20; color: ' + obtenerColorCategoria(producto.categoria) + '; border: 1px solid ' + obtenerColorCategoria(producto.categoria) + '40;'"
+              >
+                {{ producto.categoria }}
+              </span>
+            </td>
+            <td>S/ {{ producto.precio.toFixed(2) }}</td>
+            <td>
+              <span [ngClass]="['status', obtenerEstado(producto.stock)]">
+                {{ obtenerTextoEstado(producto.stock) }}
+              </span>
+            </td>
+            <td class="actions">
+              <button
+                *ngIf="esAdmin()"
+                class="btn-icon edit"
+                (click)="abrirModalEditar(producto)"
+                title="Editar"
+              >
+                ✏️
+              </button>
+              <button
+                *ngIf="esAdmin()"
+                class="btn-icon delete"
+                (click)="eliminarProducto(producto.id, producto.nombre)"
+                title="Eliminar"
+              >
+                🗑️
+              </button>
+              <span *ngIf="!esAdmin()" class="read-only">
+                Solo lectura
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="table-footer">
+      Mostrando {{ productosFiltrados().length }} productos
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div *ngIf="mostrarModal()" class="modal-overlay" (click)="cerrarModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editandoProducto() ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
+      <button class="close-btn" (click)="cerrarModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nombre</label>
+        <input
+          type="text"
+          class="form-input"
+          [ngModel]="formProducto().nombre"
+          (ngModelChange)="actualizarForm('nombre', $event)"
+          placeholder="Ej: Laptop"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Fecha de Ingreso</label>
+        <input
+          type="date"
+          class="form-input"
+          [ngModel]="formProducto().fecha"
+          (ngModelChange)="actualizarForm('fecha', $event)"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Categoría</label>
+        <select 
+          class="form-input" 
+          [ngModel]="formProducto().categoria"
+          (ngModelChange)="actualizarForm('categoria', $event)"
+        >
+          <option value="">Seleccionar categoría</option>
+          <option *ngFor="let cat of categorias()" [value]="cat.nombre">
+            {{ cat.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Precio</label>
+          <input
+            type="number"
+            class="form-input"
+            [ngModel]="formProducto().precio"
+            (ngModelChange)="actualizarForm('precio', +$event)"
+            step="0.01"
+            min="0"
+            placeholder="0.00"
+          />
+        </div>
+        <div class="form-group">
+          <label>Stock</label>
+          <input
+            type="number"
+            class="form-input"
+            [ngModel]="formProducto().stock"
+            (ngModelChange)="actualizarForm('stock', +$event)"
+            min="0"
+            placeholder="0"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-save" (click)="guardarProducto()">Guardar</button>
+    </div>
+  </div>
+</div>
