@@ -1,4 +1,69 @@
+<!-- ===================================
+     TEMPLATE DEL DASHBOARD
+     Archivo: src/app/components/dashboard/dashboard.component.html
+     =================================== -->
+
 <div class="dashboard-container">
-  <h1>{{ titulo }}</h1>
-  <p>¡Dashboard en construcción! 🚀</p>
+  <!-- Header -->
+  <div class="content-header">
+    <h1>Dashboard</h1>
+    <div class="user-avatar">{{ iniciales }}</div>
+  </div>
+
+  <!-- Mensaje de bienvenida -->
+  <div class="welcome-message">
+    <h2>¡Bienvenido, {{ usuarioActual?.name }}!</h2>
+    <p>Rol: <span class="role-badge">{{ usuarioActual?.role }}</span></p>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="stats-grid">
+    <div *ngFor="let stat of estadisticas()" class="stat-card">
+      <div class="stat-info">
+        <h3>{{ stat.titulo }}</h3>
+        <div class="stat-value">{{ stat.valor }}</div>
+      </div>
+      <div [ngClass]="['stat-icon', obtenerClaseColor(stat.color)]">
+        {{ stat.icono }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Productos recientes -->
+  <div class="section-card">
+    <h2>📦 Últimos Productos</h2>
+    <div *ngIf="productos().length > 0; else sinProductos" class="products-preview">
+      <div *ngFor="let producto of productos().slice(0, 5)" class="product-item">
+        <div class="product-info">
+          <h4>{{ producto.nombre }}</h4>
+          <p>{{ producto.categoria }}</p>
+        </div>
+        <div class="product-details">
+          <span class="price">S/ {{ producto.precio.toFixed(2) }}</span>
+          <span class="stock">Stock: {{ producto.stock }}</span>
+        </div>
+      </div>
+    </div>
+    <ng-template #sinProductos>
+      <div class="placeholder">
+        <p>No hay productos aún. ¡Crea uno para comenzar!</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Categorías -->
+  <div class="section-card">
+    <h2>🏷️ Categorías</h2>
+    <div *ngIf="categorias().length > 0; else sinCategorias" class="categories-preview">
+      <div *ngFor="let cat of categorias()" class="category-item">
+        <div class="category-dot" [style.background]="cat.color"></div>
+        <span>{{ cat.nombre }}</span>
+      </div>
+    </div>
+    <ng-template #sinCategorias>
+      <div class="placeholder">
+        <p>No hay categorías</p>
+      </div>
+    </ng-template>
+  </div>
 </div>

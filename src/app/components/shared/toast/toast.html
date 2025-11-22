@@ -1,2 +1,21 @@
-<!-- Toast notifications irán aquí en la siguiente fase -->
-<div></div>
+<!-- ===================================
+     TEMPLATE DEL TOAST
+     Archivo: src/app/components/shared/toast/toast.component.html
+     =================================== -->
+
+<div class="toasts-container">
+  <div
+    *ngFor="let toast of toasts()"
+    [ngClass]="['toast', toast.tipo]"
+  >
+    <span class="toast-icon">{{ obtenerIcono(toast.tipo) }}</span>
+    <span class="toast-message">{{ toast.mensaje }}</span>
+    <button
+      class="toast-close"
+      (click)="eliminarToast(toast.id)"
+      aria-label="Cerrar"
+    >
+      ×
+    </button>
+  </div>
+</div>

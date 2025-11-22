@@ -3,7 +3,7 @@
    Archivo: src/app/components/login/login.component.ts
    =================================== */
 
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,6 +18,9 @@ import { Usuario } from '../../models/usuario';
   styleUrl: './login.css'
 })
 export class Login {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   // Para mostrar/ocultar formularios
   mostrarLogin = signal(true);
 
@@ -35,11 +38,6 @@ export class Login {
   // Para mostrar mensajes de error
   mensajeError = signal('');
   mensajeExito = signal('');
-
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
 
   /**
    * Procesar login

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth';
@@ -12,12 +12,10 @@ import { Usuario } from '../../../models/usuario';
   styleUrl: './sidebar.css'
 })
 export class Sidebar implements OnInit {
-  usuarioActual: Usuario | null = null;
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  usuarioActual: Usuario | null = null;
 
   ngOnInit(): void {
     this.usuarioActual = this.authService.obtenerUsuarioActual();
