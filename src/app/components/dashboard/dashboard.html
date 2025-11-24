@@ -1,5 +1,5 @@
 <!-- ===================================
-     TEMPLATE DEL DASHBOARD
+     DASHBOARD SIN CHART.JS
      Archivo: src/app/components/dashboard/dashboard.component.html
      =================================== -->
 
@@ -29,41 +29,131 @@
     </div>
   </div>
 
-  <!-- Productos recientes -->
-  <div class="section-card">
-    <h2>📦 Últimos Productos</h2>
-    <div *ngIf="productos().length > 0; else sinProductos" class="products-preview">
-      <div *ngFor="let producto of productos().slice(0, 5)" class="product-item">
-        <div class="product-info">
-          <h4>{{ producto.nombre }}</h4>
-          <p>{{ producto.categoria }}</p>
+  <!-- Gráficas -->
+  <div class="charts-grid" *ngIf="productos().length > 0; else sinProductos">
+    <!-- Gráfica de categorías -->
+    <div class="chart-card">
+      <h2>📊 Distribución por Categoría</h2>
+      <div class="chart-content">
+        <div *ngIf="datosGraficaCategorias().length > 0; else sinDatos" class="bars-chart">
+          <div *ngFor="let dato of datosGraficaCategorias()" class="chart-bar">
+            <div class="bar-label">{{ dato.nombre }}</div>
+            <div class="bar-container">
+              <div 
+                class="bar" 
+                [style.width.%]="dato.porcentaje"
+                [style.background]="dato.color"
+              ></div>
+            </div>
+            <div class="bar-value">{{ dato.stock }} unidades ({{ dato.porcentaje.toFixed(1) }}%)</div>
+          </div>
         </div>
-        <div class="product-details">
-          <span class="price">S/ {{ producto.precio.toFixed(2) }}</span>
-          <span class="stock">Stock: {{ producto.stock }}</span>
-        </div>
+        <ng-template #sinDatos>
+          <p class="no-data">Sin datos</p>
+        </ng-template>
       </div>
     </div>
-    <ng-template #sinProductos>
-      <div class="placeholder">
-        <p>No hay productos aún. ¡Crea uno para comenzar!</p>
+
+    <!-- Top Stock -->
+    <div class="chart-card">
+      <h2>📈 Top Stock de Productos</h2>
+      <div class="chart-content">
+        <div *ngIf="topProductos().length > 0; else sinDatos2" class="top-products">
+          <div *ngFor="let producto of topProductos()" class="product-bar">
+            <div class="product-name">{{ producto.nombre }}</div>
+            <div class="product-bar-container">
+              <div 
+                class="bar" 
+                [style.width.%]="(producto.stock / (topProductos()[0]?.stock || 1)) * 100"
+                [style.background]="obtenerColorCategoria(producto.categoria)"
+              ></div>
+            </div>
+            <div class="product-stock">{{ producto.stock }}</div>
+          </div>
+        </div>
+        <ng-template #sinDatos2>
+          <p class="no-data">Sin datos</p>
+        </ng-template>
       </div>
-    </ng-template>
+    </div>
+  </div>
+
+  <!-- Segunda fila de gráficas -->
+  <div class="charts-grid" *ngIf="productos().length > 0">
+    <!-- Valor por categoría -->
+    <div class="chart-card">
+      <h2>💵 Valor Total por Categoría</h2>
+      <div class="chart-content">
+        <div *ngIf="datosValorCategoria().length > 0; else sinDatos3" class="bars-chart">
+          <div *ngFor="let dato of datosValorCategoria()" class="chart-bar">
+            <div class="bar-label">{{ dato.nombre }}</div>
+            <div class="bar-container">
+              <div 
+                class="bar" 
+                [style.width.%]="dato.porcentaje"
+                [style.background]="dato.color"
+              ></div>
+            </div>
+            <div class="bar-value">S/ {{ dato.valor.toLocaleString('es-PE', {minimumFractionDigits: 2}) }}</div>
+          </div>
+        </div>
+        <ng-template #sinDatos3>
+          <p class="no-data">Sin datos</p>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Productos recientes -->
+    <div class="section-card">
+      <h2>📦 Últimos Productos</h2>
+      <div *ngIf="productos().length > 0; else sinProductosRecientes" class="products-preview">
+        <div *ngFor="let producto of productos().slice(0, 5)" class="product-item">
+          <div class="product-info">
+            <h4>{{ producto.nombre }}</h4>
+            <p>{{ producto.categoria }}</p>
+          </div>
+          <div class="product-details">
+            <span class="price">S/ {{ producto.precio.toFixed(2) }}</span>
+            <span class="stock">Stock: {{ producto.stock }}</span>
+          </div>
+        </div>
+      </div>
+      <ng-template #sinProductosRecientes>
+        <div class="placeholder">
+          <p>No hay productos aún</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Sin productos -->
+  <ng-template #sinProductos>
+    <div class="charts-grid">
+      <div class="chart-card placeholder-large">
+        <p>📊 Crea productos para ver las gráficas</p>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Stock bajo -->
+  <div class="alert-card" *ngIf="obtenerStockBajo().length > 0">
+    <h2>⚠️ Productos con Stock Bajo</h2>
+    <div class="alerts-list">
+      <div *ngFor="let producto of obtenerStockBajo()" class="alert-item">
+        <span class="alert-name">{{ producto.nombre }}</span>
+        <span class="alert-stock">Stock: {{ producto.stock }}</span>
+      </div>
+    </div>
   </div>
 
   <!-- Categorías -->
-  <div class="section-card">
+  <div class="section-card" *ngIf="categorias().length > 0">
     <h2>🏷️ Categorías</h2>
-    <div *ngIf="categorias().length > 0; else sinCategorias" class="categories-preview">
+    <div class="categories-preview">
       <div *ngFor="let cat of categorias()" class="category-item">
         <div class="category-dot" [style.background]="cat.color"></div>
         <span>{{ cat.nombre }}</span>
       </div>
     </div>
-    <ng-template #sinCategorias>
-      <div class="placeholder">
-        <p>No hay categorías</p>
-      </div>
-    </ng-template>
   </div>
 </div>

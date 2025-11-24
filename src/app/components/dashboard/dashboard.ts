@@ -36,7 +36,7 @@ export class Dashboard {
   productos = this.productosService.productos;
   categorias = this.categoriasService.categorias;
 
-  // Computed para estadísticas (se actualiza automáticamente)
+  // Computed para estadísticas
   estadisticas = computed(() => {
     const totalProductos = this.productos().length;
     const valorTotal = this.productosService.obtenerValorTotal();
@@ -71,6 +71,48 @@ export class Dashboard {
     ] as Estadistica[];
   });
 
+  // Computed para gráfica de categorías
+  datosGraficaCategorias = computed(() => {
+    return this.categorias().map(c => {
+      const productsInCategory = this.productos().filter(p => p.categoria === c.nombre);
+      const stock = productsInCategory.reduce((sum, p) => sum + p.stock, 0);
+      const total = this.productos().reduce((sum, p) => sum + p.stock, 0);
+      const porcentaje = total > 0 ? (stock / total) * 100 : 0;
+      return {
+        nombre: c.nombre,
+        stock,
+        porcentaje,
+        color: c.color
+      };
+    }).filter(d => d.stock > 0);
+  });
+
+  // Computed para top 5 productos por stock
+  topProductos = computed(() => {
+    return [...this.productos()]
+      .sort((a, b) => b.stock - a.stock)
+      .slice(0, 5);
+  });
+
+  // Computed para valor por categoría
+  datosValorCategoria = computed(() => {
+    const datos = this.categorias().map(c => {
+      const productsInCategory = this.productos().filter(p => p.categoria === c.nombre);
+      const valor = productsInCategory.reduce((sum, p) => sum + p.precio * p.stock, 0);
+      return {
+        nombre: c.nombre,
+        valor,
+        color: c.color
+      };
+    }).filter(d => d.valor > 0);
+
+    const maxValor = Math.max(...datos.map(d => d.valor), 1);
+    return datos.map(d => ({
+      ...d,
+      porcentaje: (d.valor / maxValor) * 100
+    }));
+  });
+
   constructor() {
     this.obtenerUsuarioActual();
   }
@@ -98,14 +140,6 @@ export class Dashboard {
   }
 
   /**
-   * Obtener color de categoría
-   */
-  obtenerColorCategoria(nombreCategoria: string): string {
-    const categoria = this.categorias().find(c => c.nombre === nombreCategoria);
-    return categoria ? categoria.color : '#6366f1';
-  }
-
-  /**
    * Obtener estado del producto
    */
   obtenerEstado(stock: number): string {
@@ -123,9 +157,17 @@ export class Dashboard {
   }
 
   /**
-   * Obtener clase de estado
+   * Obtener productos con stock bajo
    */
-  obtenerClaseEstado(stock: number): string {
-    return this.productosService.obtenerEstado(stock);
+  obtenerStockBajo() {
+    return this.productosService.obtenerStockBajo();
+  }
+
+  /**
+   * Obtener color de categoría
+   */
+  obtenerColorCategoria(nombreCategoria: string): string {
+    const categoria = this.categorias().find(c => c.nombre === nombreCategoria);
+    return categoria ? categoria.color : '#6366f1';
   }
 }
