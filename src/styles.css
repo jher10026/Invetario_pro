@@ -158,3 +158,52 @@ body {
     opacity: 1;
   }
 }
+/* ===================================
+   LAYOUT PRINCIPAL - AGREGAR A styles.css
+   =================================== */
+
+/* Contenedor raíz */
+app-root {
+  display: block;
+  min-height: 100vh;
+}
+
+/* Layout en DESKTOP - contenido al lado del sidebar */
+@media (min-width: 769px) {
+  app-root {
+    display: flex;
+  }
+  
+  /* El contenido principal tiene margen izquierdo */
+  app-root > *:not(app-sidebar) {
+    margin-left: 16rem;
+    flex: 1;
+    min-height: 100vh;
+  }
+}
+
+@media (min-width: 1440px) {
+  app-root > *:not(app-sidebar) {
+    margin-left: 18rem;
+  }
+}
+
+@media (max-width: 1023px) and (min-width: 769px) {
+  app-root > *:not(app-sidebar) {
+    margin-left: 14rem;
+  }
+}
+
+/* Layout en MÓVIL - sidebar arriba, contenido abajo */
+@media (max-width: 768px) {
+  app-root {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* El contenido simplemente fluye después del sidebar */
+  app-root > *:not(app-sidebar) {
+    margin-left: 0;
+    flex: 1;
+  }
+}
