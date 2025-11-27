@@ -105,7 +105,11 @@ export class FirebaseService {
 
       console.log('✅ Datos guardados en Firestore:', usuarioData);
 
-      return { success: true, message: '¡Registro exitoso!' };
+      // 🔑 Cerrar sesión inmediatamente para forzar login manual
+await signOut(this.auth);
+console.log('🚪 Sesión cerrada - usuario debe hacer login');
+
+return { success: true, message: '¡Registro exitoso!' };
 
     } catch (error: any) {
       console.error('❌ Error en registro:', error);

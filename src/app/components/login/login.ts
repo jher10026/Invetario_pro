@@ -170,7 +170,7 @@ export class Login implements OnInit, OnDestroy {
           this.limpiarFormularios();
           this.mostrarLogin.set(true);
           this.limpiarMensajes();
-        }, 3000);
+        }, 1000);
       } else {
         this.mensajeError.set(resultado.message);
       }
