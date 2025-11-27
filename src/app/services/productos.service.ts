@@ -6,8 +6,8 @@
    =================================== */
 
 import { Injectable, signal, computed } from '@angular/core';
-import { Producto, EstadoStock } from '../models/producto';
-import { StorageService } from './storage';
+import { Producto, EstadoStock } from '../models/producto.model';
+import { StorageService } from './storage.service';
 
 @Injectable({
   providedIn: 'root'

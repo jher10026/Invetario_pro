@@ -5,10 +5,10 @@
 
 import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../services/auth';
-import { ProductosService } from '../../services/productos';
-import { CategoriasService } from '../../services/categorias';
-import { Usuario } from '../../models/usuario';
+import { AuthService } from '../../services/auth.service';
+import { ProductosService } from '../../services/productos.service';
+import { CategoriasService } from '../../services/categorias.service';
+import { Usuario } from '../../models/usuario.model';
 
 export interface Estadistica {
   titulo: string;

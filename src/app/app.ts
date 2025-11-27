@@ -6,7 +6,7 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from './services/auth';
+import { AuthService } from './services/auth.service';
 import { Sidebar } from './components/shared/sidebar/sidebar';
 import { Toast } from './components/shared/toast/toast';
 

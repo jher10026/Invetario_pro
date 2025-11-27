@@ -6,12 +6,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CategoriasService } from '../../services/categorias';
-import { ProductosService } from '../../services/productos';
-import { NotificationService } from '../../services/notification';
-import { AuthService } from '../../services/auth';
-import { Categoria } from '../../models/categoria';
-import { Usuario } from '../../models/usuario';
+import { CategoriasService } from '../../services/categorias.service';
+import { ProductosService } from '../../services/productos.service';
+import { NotificationService } from '../../services/notification.service';
+import { AuthService } from '../../services/auth.service';
+import { Categoria } from '../../models/categoria.model';
+import { Usuario } from '../../models/usuario.model';
 
 @Component({
   selector: 'app-categorias',

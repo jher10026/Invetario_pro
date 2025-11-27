@@ -7,10 +7,10 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
-import { AuthService } from '../../../services/auth';
-import { ReportesService } from '../../../services/reportes';
-import { NotificationService } from '../../../services/notification';
-import { Usuario } from '../../../models/usuario';
+import { AuthService } from '../../../services/auth.service';
+import { ReportesService } from '../../../services/reportes.service';
+import { NotificationService } from '../../../services/notification.service';
+import { Usuario } from '../../../models/usuario.model';
 
 @Component({
   selector: 'app-sidebar',

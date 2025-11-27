@@ -7,8 +7,8 @@ import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth';
-import { Usuario } from '../../models/usuario';
+import { AuthService } from '../../services/auth.service';
+import { Usuario } from '../../models/usuario.model';
 
 @Component({
   selector: 'app-login',

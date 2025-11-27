@@ -5,7 +5,7 @@
 
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NotificationService } from '../../../services/notification';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-toast',

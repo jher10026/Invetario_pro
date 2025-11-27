@@ -6,13 +6,13 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ProductosService } from '../../services/productos';
-import { CategoriasService } from '../../services/categorias';
-import { NotificationService } from '../../services/notification';
-import { AuthService } from '../../services/auth';
-import { Producto, EstadoStock } from '../../models/producto';
-import { Categoria } from '../../models/categoria';
-import { Usuario } from '../../models/usuario';
+import { ProductosService } from '../../services/productos.service';
+import { CategoriasService } from '../../services/categorias.service';
+import { NotificationService } from '../../services/notification.service';
+import { AuthService } from '../../services/auth.service';
+import { Producto, EstadoStock } from '../../models/producto.model';
+import { Categoria } from '../../models/categoria.model';
+import { Usuario } from '../../models/usuario.model';
 
 @Component({
   selector: 'app-inventario',

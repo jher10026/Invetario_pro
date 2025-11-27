@@ -6,8 +6,8 @@
    =================================== */
 
 import { Injectable, signal } from '@angular/core';
-import { Categoria } from '../models/categoria';
-import { StorageService } from './storage';
+import { Categoria } from '../models/categoria.model';
+import { StorageService } from './storage.service';
 
 @Injectable({
   providedIn: 'root'

@@ -4,8 +4,8 @@
    =================================== */
 
 import { Injectable, signal } from '@angular/core';
-import { Reporte } from '../models/reporte';
-import { StorageService } from './storage';
+import { Reporte } from '../models/reporte.model';
+import { StorageService } from './storage.service';
 
 @Injectable({
   providedIn: 'root'

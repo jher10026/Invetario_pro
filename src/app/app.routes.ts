@@ -11,7 +11,7 @@ import { Login } from './components/login/login';
 import { Dashboard } from './components/dashboard/dashboard';
 import { Inventario } from './components/inventario/inventario';
 import { Categorias } from './components/categorias/categorias';
-import { authGuard } from './guards/auth';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   // Ruta de login (sin protección)
