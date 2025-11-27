@@ -1,52 +1,58 @@
 /* ===================================
-   GUARD DE AUTENTICACIÓN
+   GUARD DE AUTENTICACIÓN - VERSIÓN CORREGIDA
    Archivo: src/app/guards/auth.guard.ts
    
-   ¿Qué hace? Protege las rutas para que
-   solo usuarios autenticados puedan acceder
+   ✅ Espera correctamente a Firebase
+   ✅ Maneja todos los estados posibles
    =================================== */
 
-import { Injectable } from '@angular/core';
-import { Router, CanActivateFn } from '@angular/router';
 import { inject } from '@angular/core';
-import { AuthService } from '../services/auth.service';
+import { Router, CanActivateFn } from '@angular/router';
+import { FirebaseService } from '../services/firebase.service';
+import { map, filter, take, timeout } from 'rxjs/operators';
+import { catchError, of } from 'rxjs';
 
 /**
- * Guard funcional para proteger rutas
- * En Angular 20 es mejor usar guards funcionales
+ * Guard funcional que protege rutas
+ * Solo permite acceso si el usuario está autenticado
  */
 export const authGuard: CanActivateFn = (route, state) => {
-  const authService = inject(AuthService);
+  const firebaseService = inject(FirebaseService);
   const router = inject(Router);
 
-  // Si el usuario está autenticado, permitir acceso
-  if (authService.estaAutenticado()) {
-    return true;
-  }
+  console.log('🛡️ Auth Guard activado para:', state.url);
 
-  // Si no está autenticado, redirigir a login
-  router.navigate(['/login']);
-  return false;
-};
+  return firebaseService.currentUser$.pipe(
+    // Esperar máximo 5 segundos a que Firebase cargue
+    timeout(5000),
+    
+    // Filtrar undefined (estado de carga)
+    filter(user => user !== undefined),
+    
+    // Tomar solo el primer valor válido
+    take(1),
+    
+    // Evaluar si puede acceder
+    map(user => {
+      if (user === null) {
+        // No autenticado - redirigir a login
+        console.log('🚫 Auth Guard - No autenticado, redirigiendo a login');
+        router.navigate(['/login'], { 
+          queryParams: { returnUrl: state.url } 
+        });
+        return false;
+      }
 
-/**
- * Guard basado en clase (alternativa, por si lo necesitas)
- */
-@Injectable({
-  providedIn: 'root'
-})
-export class AuthGuard {
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
-
-  canActivate(): boolean {
-    if (this.authService.estaAutenticado()) {
+      // Usuario autenticado - permitir acceso
+      console.log('✅ Auth Guard - Acceso permitido para:', user.name);
       return true;
-    }
-
-    this.router.navigate(['/login']);
-    return false;
-  }
-}
+    }),
+    
+    // Manejo de errores (timeout, etc)
+    catchError(error => {
+      console.error('❌ Auth Guard - Error:', error);
+      router.navigate(['/login']);
+      return of(false);
+    })
+  );
+};

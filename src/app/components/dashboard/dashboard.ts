@@ -1,11 +1,13 @@
 /* ===================================
-   COMPONENTE DASHBOARD
-   Archivo: src/app/components/dashboard/dashboard.component.ts
+   COMPONENTE DASHBOARD - FASE 3
+   Archivo: src/app/components/dashboard/dashboard.ts
+   
+   ✅ Actualizado para Firestore
    =================================== */
 
 import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../services/auth.service';
+import { FirebaseService } from '../../services/firebase.service';
 import { ProductosService } from '../../services/productos.service';
 import { CategoriasService } from '../../services/categorias.service';
 import { Usuario } from '../../models/usuario.model';
@@ -25,7 +27,7 @@ export interface Estadistica {
   styleUrl: './dashboard.css'
 })
 export class Dashboard {
-  private authService = inject(AuthService);
+  private firebaseService = inject(FirebaseService);
   private productosService = inject(ProductosService);
   private categoriasService = inject(CategoriasService);
 
@@ -35,6 +37,7 @@ export class Dashboard {
   // Acceso a los datos desde los servicios
   productos = this.productosService.productos;
   categorias = this.categoriasService.categorias;
+  cargando = this.productosService.cargando;
 
   // Computed para estadísticas
   estadisticas = computed(() => {
@@ -121,15 +124,17 @@ export class Dashboard {
    * Obtener usuario actual
    */
   private obtenerUsuarioActual(): void {
-    this.usuarioActual = this.authService.obtenerUsuarioActual();
+    this.firebaseService.currentUser$.subscribe(user => {
+      this.usuarioActual = user || null;
 
-    if (this.usuarioActual) {
-      this.iniciales = this.usuarioActual.name
-        .split(' ')
-        .map(n => n[0])
-        .join('')
-        .toUpperCase();
-    }
+      if (this.usuarioActual) {
+        this.iniciales = this.usuarioActual.name
+          .split(' ')
+          .map(n => n[0])
+          .join('')
+          .toUpperCase();
+      }
+    });
   }
 
   /**

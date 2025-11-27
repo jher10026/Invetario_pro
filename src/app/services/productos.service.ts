@@ -1,34 +1,67 @@
 /* ===================================
-   SERVICIO DE PRODUCTOS
+   SERVICIO DE PRODUCTOS - FASE 3
    Archivo: src/app/services/productos.service.ts
    
-   ¿Qué hace? Gestiona todos los productos
+   ⚠️ REEMPLAZA COMPLETAMENTE EL ARCHIVO ANTERIOR
+   ✅ Migrado a Firestore
    =================================== */
 
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { Producto, EstadoStock } from '../models/producto.model';
-import { StorageService } from './storage.service';
+import { FirebaseService } from './firebase.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductosService {
-  // Signal con los productos (Angular 20 signals)
+  private firebaseService = inject(FirebaseService);
+
+  // Signal con los productos
   private productosSignal = signal<Producto[]>([]);
   
   // Computed para acceso de solo lectura
   productos = this.productosSignal.asReadonly();
 
-  constructor(private storageService: StorageService) {
-    this.cargarProductos();
+  // Estado de carga
+  cargando = signal(false);
+
+  constructor() {
+    console.log('📦 Productos Service inicializado');
+    this.inicializarListener();
   }
 
   /**
-   * Cargar productos del storage
+   * Inicializar listener de autenticación y cargar productos
    */
-  private cargarProductos(): void {
-    const productosGuardados = this.storageService.obtenerProductos<Producto>([]);
-    this.productosSignal.set(productosGuardados);
+  private inicializarListener(): void {
+    this.firebaseService.currentUser$.subscribe(async (user) => {
+      if (user) {
+        console.log('👤 Usuario autenticado, cargando productos...');
+        await this.cargarProductos();
+      } else {
+        console.log('👤 Sin usuario, limpiando productos');
+        this.productosSignal.set([]);
+      }
+    });
+  }
+
+  /**
+   * Cargar productos desde Firestore
+   */
+  async cargarProductos(): Promise<void> {
+    try {
+      this.cargando.set(true);
+      console.log('📥 Cargando productos desde Firestore...');
+      
+      const productos = await this.firebaseService.obtenerProductos();
+      this.productosSignal.set(productos);
+      
+      console.log(`✅ ${productos.length} productos cargados`);
+    } catch (error) {
+      console.error('❌ Error al cargar productos:', error);
+    } finally {
+      this.cargando.set(false);
+    }
   }
 
   /**
@@ -48,53 +81,114 @@ export class ProductosService {
   /**
    * Agregar nuevo producto
    */
-  agregar(producto: Omit<Producto, 'id'>): Producto {
-    const nuevoProducto: Producto = {
-      id: Date.now(),
-      ...producto
-    };
-
-    const actuales = this.productosSignal();
-    this.productosSignal.set([...actuales, nuevoProducto]);
-    this.guardarEnStorage();
-
-    return nuevoProducto;
+  async agregar(producto: Omit<Producto, 'id'>): Promise<Producto | null> {
+    try {
+      console.log('➕ Agregando producto:', producto.nombre);
+      
+      const nuevoProducto = await this.firebaseService.agregarProducto(producto);
+      
+      if (nuevoProducto) {
+        // Agregar al signal local
+        const actuales = this.productosSignal();
+        this.productosSignal.set([...actuales, nuevoProducto]);
+        
+        console.log('✅ Producto agregado');
+        return nuevoProducto;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('❌ Error al agregar producto:', error);
+      return null;
+    }
   }
 
   /**
    * Actualizar producto existente
    */
-  actualizar(id: number, producto: Partial<Producto>): boolean {
-    const actuales = this.productosSignal();
-    const index = actuales.findIndex(p => p.id === id);
+  async actualizar(id: number, producto: Partial<Producto>): Promise<boolean> {
+    try {
+      const actuales = this.productosSignal();
+      const productoActual = actuales.find(p => p.id === id);
+      
+      if (!productoActual) {
+        console.error('❌ Producto no encontrado');
+        return false;
+      }
 
-    if (index === -1) {
+      // Obtener el ID de Firestore
+      const firestoreId = (productoActual as any)._firestoreId;
+      
+      if (!firestoreId) {
+        console.error('❌ ID de Firestore no encontrado');
+        return false;
+      }
+
+      console.log('✏️ Actualizando producto:', productoActual.nombre);
+      
+      const actualizado = await this.firebaseService.actualizarProducto(
+        firestoreId,
+        producto
+      );
+
+      if (actualizado) {
+        // Actualizar en el signal local
+        const index = actuales.findIndex(p => p.id === id);
+        if (index !== -1) {
+          actuales[index] = { ...actuales[index], ...producto };
+          this.productosSignal.set([...actuales]);
+        }
+        
+        console.log('✅ Producto actualizado');
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('❌ Error al actualizar producto:', error);
       return false;
     }
-
-    actuales[index] = { ...actuales[index], ...producto };
-    this.productosSignal.set([...actuales]);
-    this.guardarEnStorage();
-
-    return true;
   }
 
   /**
    * Eliminar producto
    */
-  eliminar(id: number): boolean {
-    const actuales = this.productosSignal();
-    const index = actuales.findIndex(p => p.id === id);
+  async eliminar(id: number): Promise<boolean> {
+    try {
+      const actuales = this.productosSignal();
+      const producto = actuales.find(p => p.id === id);
+      
+      if (!producto) {
+        console.error('❌ Producto no encontrado');
+        return false;
+      }
 
-    if (index === -1) {
+      // Obtener el ID de Firestore
+      const firestoreId = (producto as any)._firestoreId;
+      
+      if (!firestoreId) {
+        console.error('❌ ID de Firestore no encontrado');
+        return false;
+      }
+
+      console.log('🗑️ Eliminando producto:', producto.nombre);
+      
+      const eliminado = await this.firebaseService.eliminarProducto(firestoreId);
+
+      if (eliminado) {
+        // Eliminar del signal local
+        const nuevosProductos = actuales.filter(p => p.id !== id);
+        this.productosSignal.set(nuevosProductos);
+        
+        console.log('✅ Producto eliminado');
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('❌ Error al eliminar producto:', error);
       return false;
     }
-
-    actuales.splice(index, 1);
-    this.productosSignal.set([...actuales]);
-    this.guardarEnStorage();
-
-    return true;
   }
 
   /**
@@ -155,12 +249,5 @@ export class ProductosService {
       default:
         return copia;
     }
-  }
-
-  /**
-   * Guardar en storage
-   */
-  private guardarEnStorage(): void {
-    this.storageService.guardarProductos(this.productosSignal());
   }
 }

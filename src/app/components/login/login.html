@@ -1,164 +1,180 @@
 <!-- ===================================
-     TEMPLATE DEL LOGIN
-     Archivo: src/app/components/login/login.component.html
+     TEMPLATE DE LOGIN - SIN ADMIN
+     Archivo: src/app/components/login/login.html
+     
+     ✅ Sin código de administrador
      =================================== -->
 
 <div class="login-container">
-  <div class="login-box">
-    <!-- Logo -->
-    <div class="login-logo">📦</div>
-
-    <!-- Formulario de LOGIN -->
-    <div *ngIf="mostrarLogin()">
-      <h1>Bienvenido</h1>
-
-      <!-- Mensajes -->
-      <div *ngIf="mensajeError()" class="mensaje error">
-        {{ mensajeError() }}
-      </div>
-      <div *ngIf="mensajeExito()" class="mensaje success">
-        {{ mensajeExito() }}
-      </div>
-
-      <!-- Formulario -->
-      <form (ngSubmit)="handleLogin()">
-        <div class="form-group">
-          <input
-            type="text"
-            class="form-input"
-            [ngModel]="loginUsername()"
-            (ngModelChange)="loginUsername.set($event)"
-            name="username"
-            placeholder="Usuario (admin o user)"
-            required
-          />
-        </div>
-
-        <div class="form-group">
-          <input
-            type="password"
-            class="form-input"
-            [ngModel]="loginPassword()"
-            (ngModelChange)="loginPassword.set($event)"
-            name="password"
-            placeholder="Contraseña (12345)"
-            required
-          />
-        </div>
-
-        <button type="submit" class="login-btn">
-          Iniciar Sesión
-        </button>
-      </form>
-
-      <!-- Link a registro -->
-      <div class="register-link">
-        ¿No tienes cuenta?
-        <a href="#" (click)="alternarFormulario(); $event.preventDefault()">
-          Regístrate
-        </a>
-      </div>
+  <div class="login-card">
+    <!-- Logo y título -->
+    <div class="login-header">
+      <div class="logo">📦</div>
+      <h1>Inventario Pro</h1>
+      <p>{{ mostrarLogin() ? 'Inicia sesión en tu cuenta' : 'Crea tu cuenta' }}</p>
     </div>
 
-    <!-- Formulario de REGISTRO -->
-    <div *ngIf="!mostrarLogin()">
-      <h1>Crear Cuenta</h1>
-
-      <!-- Mensajes -->
-      <div *ngIf="mensajeError()" class="mensaje error">
-        {{ mensajeError() }}
+    <!-- Mensajes de error/éxito -->
+    @if (mensajeError()) {
+      <div class="alert alert-error">
+        ⚠️ {{ mensajeError() }}
       </div>
-      <div *ngIf="mensajeExito()" class="mensaje success">
-        {{ mensajeExito() }}
+    }
+
+    @if (mensajeExito()) {
+      <div class="alert alert-success">
+        ✅ {{ mensajeExito() }}
       </div>
+    }
 
-      <!-- Formulario -->
-      <form (ngSubmit)="handleRegistro()">
+    <!-- FORMULARIO DE LOGIN -->
+    @if (mostrarLogin()) {
+      <form (ngSubmit)="handleLogin()" class="login-form">
         <div class="form-group">
-          <input
-            type="text"
-            class="form-input"
-            [ngModel]="registroName()"
-            (ngModelChange)="registroName.set($event)"
-            name="name"
-            placeholder="Nombre completo"
-            required
-          />
-        </div>
-
-        <div class="form-group">
+          <label for="loginEmail">Correo Electrónico</label>
           <input
             type="email"
-            class="form-input"
-            [ngModel]="registroEmail()"
-            (ngModelChange)="registroEmail.set($event)"
-            name="email"
-            placeholder="Correo electrónico"
+            id="loginEmail"
+            [(ngModel)]="loginEmail"
+            name="loginEmail"
+            placeholder="tu@email.com"
+            [disabled]="cargando()"
             required
           />
         </div>
 
         <div class="form-group">
-          <input
-            type="text"
-            class="form-input"
-            [ngModel]="registroUsername()"
-            (ngModelChange)="registroUsername.set($event)"
-            name="registerUser"
-            placeholder="Nombre de usuario"
-            minlength="4"
-            required
-          />
-        </div>
-
-        <div class="form-group">
+          <label for="loginPassword">Contraseña</label>
           <input
             type="password"
-            class="form-input"
-            [ngModel]="registroPassword()"
-            (ngModelChange)="registroPassword.set($event)"
-            name="registerPass"
-            placeholder="Contraseña"
-            minlength="5"
+            id="loginPassword"
+            [(ngModel)]="loginPassword"
+            name="loginPassword"
+            placeholder="••••••••"
+            [disabled]="cargando()"
             required
           />
         </div>
 
-        <div class="form-group">
-          <input
-            type="password"
-            class="form-input"
-            [ngModel]="registroPasswordConfirm()"
-            (ngModelChange)="registroPasswordConfirm.set($event)"
-            name="registerPassConfirm"
-            placeholder="Confirmar contraseña"
-            required
-          />
-        </div>
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="cargando()"
+        >
+          @if (cargando()) {
+            <span class="spinner"></span> Iniciando sesión...
+          } @else {
+            Iniciar Sesión
+          }
+        </button>
 
-        <button type="submit" class="login-btn">
-          Registrarse
+        <!-- Botón de prueba (útil para desarrollo) -->
+        <button 
+          type="button" 
+          class="btn btn-secondary"
+          (click)="loginPrueba()"
+          [disabled]="cargando()"
+        >
+          🧪 Usar cuenta de prueba
         </button>
       </form>
 
-      <!-- Link a login -->
-      <div class="register-link">
-        ¿Ya tienes cuenta?
-        <a href="#" (click)="alternarFormulario(); $event.preventDefault()">
-          Inicia Sesión
-        </a>
+      <div class="login-footer">
+        <p>
+          ¿No tienes cuenta?
+          <button 
+            type="button" 
+            class="link-button"
+            (click)="alternarFormulario()"
+            [disabled]="cargando()"
+          >
+            Regístrate aquí
+          </button>
+        </p>
       </div>
-    </div>
+    }
 
-    <!-- Botón limpiar datos -->
-    <div style="margin-top: 1rem;">
-      <button
-        type="button"
-        (click)="limpiarDatos()"
-        class="btn-clear"
-      >
-        ¿Problemas con permisos? Limpiar datos
-      </button>
-    </div>
+    <!-- FORMULARIO DE REGISTRO -->
+    @if (!mostrarLogin()) {
+      <form (ngSubmit)="handleRegistro()" class="login-form">
+        <div class="form-group">
+          <label for="registroName">Nombre Completo</label>
+          <input
+            type="text"
+            id="registroName"
+            [(ngModel)]="registroName"
+            name="registroName"
+            placeholder="Juan Pérez"
+            [disabled]="cargando()"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="registroEmail">Correo Electrónico</label>
+          <input
+            type="email"
+            id="registroEmail"
+            [(ngModel)]="registroEmail"
+            name="registroEmail"
+            placeholder="tu@email.com"
+            [disabled]="cargando()"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="registroPassword">Contraseña</label>
+          <input
+            type="password"
+            id="registroPassword"
+            [(ngModel)]="registroPassword"
+            name="registroPassword"
+            placeholder="Mínimo 6 caracteres"
+            [disabled]="cargando()"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="registroPasswordConfirm">Confirmar Contraseña</label>
+          <input
+            type="password"
+            id="registroPasswordConfirm"
+            [(ngModel)]="registroPasswordConfirm"
+            name="registroPasswordConfirm"
+            placeholder="Repite tu contraseña"
+            [disabled]="cargando()"
+            required
+          />
+        </div>
+
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="cargando()"
+        >
+          @if (cargando()) {
+            <span class="spinner"></span> Registrando...
+          } @else {
+            Crear Cuenta
+          }
+        </button>
+      </form>
+
+      <div class="login-footer">
+        <p>
+          ¿Ya tienes cuenta?
+          <button 
+            type="button" 
+            class="link-button"
+            (click)="alternarFormulario()"
+            [disabled]="cargando()"
+          >
+            Inicia sesión
+          </button>
+        </p>
+      </div>
+    }
   </div>
 </div>

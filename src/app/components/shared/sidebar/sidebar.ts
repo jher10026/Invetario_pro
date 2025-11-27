@@ -1,13 +1,15 @@
 /* ===================================
-   COMPONENTE SIDEBAR
-   Archivo: src/app/components/shared/sidebar/sidebar.component.ts
+   COMPONENTE SIDEBAR - FASE 2
+   Archivo: src/app/components/shared/sidebar/sidebar.ts
+   
+   ✅ Actualizado para usar Firebase
    =================================== */
 
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
-import { AuthService } from '../../../services/auth.service';
+import { FirebaseService } from '../../../services/firebase.service';
 import { ReportesService } from '../../../services/reportes.service';
 import { NotificationService } from '../../../services/notification.service';
 import { Usuario } from '../../../models/usuario.model';
@@ -20,7 +22,7 @@ import { Usuario } from '../../../models/usuario.model';
   styleUrl: './sidebar.css'
 })
 export class Sidebar implements OnInit {
-  private authService = inject(AuthService);
+  private firebaseService = inject(FirebaseService);
   private reportesService = inject(ReportesService);
   private notificationService = inject(NotificationService);
   private router = inject(Router);
@@ -35,13 +37,25 @@ export class Sidebar implements OnInit {
   });
 
   ngOnInit(): void {
-    this.usuarioActual = this.authService.obtenerUsuarioActual();
+    // Obtener usuario actual desde Firebase
+    this.firebaseService.currentUser$.subscribe(user => {
+      this.usuarioActual = user || null;
+    });
   }
 
-  logout(): void {
+  /**
+   * Cerrar sesión con Firebase
+   */
+  async logout(): Promise<void> {
     if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
-      this.authService.logout();
+      console.log('👋 Cerrando sesión...');
+      
+      await this.firebaseService.logout();
+      
+      // Redirigir a login
       this.router.navigate(['/login']);
+      
+      console.log('✅ Sesión cerrada');
     }
   }
 

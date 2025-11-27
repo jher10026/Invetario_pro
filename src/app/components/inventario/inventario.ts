@@ -1,6 +1,8 @@
 /* ===================================
-   COMPONENTE INVENTARIO
-   Archivo: src/app/components/inventario/inventario.component.ts
+   COMPONENTE INVENTARIO - SIN ADMIN
+   Archivo: src/app/components/inventario/inventario.ts
+   
+   ✅ Todos los usuarios pueden crear/editar/eliminar
    =================================== */
 
 import { Component, inject, signal, computed } from '@angular/core';
@@ -9,9 +11,8 @@ import { FormsModule } from '@angular/forms';
 import { ProductosService } from '../../services/productos.service';
 import { CategoriasService } from '../../services/categorias.service';
 import { NotificationService } from '../../services/notification.service';
-import { AuthService } from '../../services/auth.service';
+import { FirebaseService } from '../../services/firebase.service';
 import { Producto, EstadoStock } from '../../models/producto.model';
-import { Categoria } from '../../models/categoria.model';
 import { Usuario } from '../../models/usuario.model';
 
 @Component({
@@ -25,13 +26,17 @@ export class Inventario {
   private productosService = inject(ProductosService);
   private categoriasService = inject(CategoriasService);
   private notificationService = inject(NotificationService);
-  private authService = inject(AuthService);
+  private firebaseService = inject(FirebaseService);
 
   // Datos
   productos = this.productosService.productos;
   categorias = this.categoriasService.categorias;
+  cargando = this.productosService.cargando;
   usuarioActual: Usuario | null = null;
   iniciales = '';
+
+  // Estados de guardado
+  guardando = signal(false);
 
   // Filtros
   searchTerm = signal('');
@@ -107,15 +112,17 @@ export class Inventario {
    * Obtener usuario actual
    */
   private obtenerUsuarioActual(): void {
-    this.usuarioActual = this.authService.obtenerUsuarioActual();
+    this.firebaseService.currentUser$.subscribe(user => {
+      this.usuarioActual = user || null;
 
-    if (this.usuarioActual) {
-      this.iniciales = this.usuarioActual.name
-        .split(' ')
-        .map(n => n[0])
-        .join('')
-        .toUpperCase();
-    }
+      if (this.usuarioActual) {
+        this.iniciales = this.usuarioActual.name
+          .split(' ')
+          .map(n => n[0])
+          .join('')
+          .toUpperCase();
+      }
+    });
   }
 
   /**
@@ -153,9 +160,9 @@ export class Inventario {
   }
 
   /**
-   * Guardar producto
+   * Guardar producto (ASYNC)
    */
-  guardarProducto(): void {
+  async guardarProducto(): Promise<void> {
     const form = this.formProducto();
 
     // Validaciones
@@ -179,48 +186,76 @@ export class Inventario {
       return;
     }
 
-    if (this.editandoProducto() && this.productoSeleccionado()) {
-      // Actualizar
-      const actualizado = this.productosService.actualizar(
-        this.productoSeleccionado()!.id,
-        {
+    this.guardando.set(true);
+
+    try {
+      if (this.editandoProducto() && this.productoSeleccionado()) {
+        // Actualizar
+        const actualizado = await this.productosService.actualizar(
+          this.productoSeleccionado()!.id,
+          {
+            nombre: form.nombre,
+            fecha: form.fecha,
+            categoria: form.categoria,
+            precio: form.precio,
+            stock: form.stock
+          }
+        );
+
+        if (actualizado) {
+          this.notificationService.exito('Producto actualizado exitosamente');
+          this.cerrarModal();
+        } else {
+          this.notificationService.error('Error al actualizar el producto');
+        }
+      } else {
+        // Crear nuevo
+        const nuevoProducto = await this.productosService.agregar({
           nombre: form.nombre,
           fecha: form.fecha,
           categoria: form.categoria,
           precio: form.precio,
           stock: form.stock
+        });
+
+        if (nuevoProducto) {
+          this.notificationService.exito('Producto agregado exitosamente');
+          this.cerrarModal();
+        } else {
+          this.notificationService.error('Error al agregar el producto');
         }
-      );
-
-      if (actualizado) {
-        this.notificationService.exito('Producto actualizado exitosamente');
       }
-    } else {
-      // Crear nuevo
-      this.productosService.agregar({
-        nombre: form.nombre,
-        fecha: form.fecha,
-        categoria: form.categoria,
-        precio: form.precio,
-        stock: form.stock
-      });
-
-      this.notificationService.exito('Producto agregado exitosamente');
+    } catch (error) {
+      console.error('Error al guardar producto:', error);
+      this.notificationService.error('Error inesperado al guardar');
+    } finally {
+      this.guardando.set(false);
     }
-
-    this.cerrarModal();
   }
 
   /**
-   * Eliminar producto
+   * Eliminar producto (ASYNC)
    */
-  eliminarProducto(id: number, nombre: string): void {
-    if (confirm(`¿Estás seguro que deseas eliminar "${nombre}"?`)) {
-      const eliminado = this.productosService.eliminar(id);
+  async eliminarProducto(id: number, nombre: string): Promise<void> {
+    if (!confirm(`¿Estás seguro que deseas eliminar "${nombre}"?`)) {
+      return;
+    }
+
+    this.guardando.set(true);
+
+    try {
+      const eliminado = await this.productosService.eliminar(id);
       
       if (eliminado) {
         this.notificationService.exito('Producto eliminado exitosamente');
+      } else {
+        this.notificationService.error('Error al eliminar el producto');
       }
+    } catch (error) {
+      console.error('Error al eliminar producto:', error);
+      this.notificationService.error('Error inesperado al eliminar');
+    } finally {
+      this.guardando.set(false);
     }
   }
 
@@ -267,13 +302,6 @@ export class Inventario {
       precio: 0,
       stock: 0
     });
-  }
-
-  /**
-   * Es admin?
-   */
-  esAdmin(): boolean {
-    return this.usuarioActual?.role === 'admin';
   }
 
   /**

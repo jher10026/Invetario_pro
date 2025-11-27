@@ -1,9 +1,8 @@
 /* ===================================
-   RUTAS DE LA APLICACIÓN
+   RUTAS DE LA APLICACIÓN - CORREGIDAS
    Archivo: src/app/app.routes.ts
    
-   ¿Qué hace? Define qué componente
-   se muestra en cada URL
+   ✅ Usa authGuard (funcional) correctamente
    =================================== */
 
 import { Routes } from '@angular/router';
@@ -11,7 +10,7 @@ import { Login } from './components/login/login';
 import { Dashboard } from './components/dashboard/dashboard';
 import { Inventario } from './components/inventario/inventario';
 import { Categorias } from './components/categorias/categorias';
-import { authGuard } from './guards/auth.guard';
+import { authGuard } from './guards/auth.guard'; // ⚠️ Importa authGuard (funcional)
 
 export const routes: Routes = [
   // Ruta de login (sin protección)
@@ -20,11 +19,11 @@ export const routes: Routes = [
     component: Login
   },
 
-  // Rutas protegidas (solo para usuarios autenticados)
+  // Rutas protegidas con authGuard
   {
     path: 'dashboard',
     component: Dashboard,
-    canActivate: [authGuard]
+    canActivate: [authGuard] // ⚠️ usa authGuard (minúscula)
   },
 
   {

@@ -1,6 +1,8 @@
 /* ===================================
-   COMPONENTE CATEGORÍAS
-   Archivo: src/app/components/categorias/categorias.component.ts
+   COMPONENTE CATEGORÍAS - CORREGIDO
+   Archivo: src/app/components/categorias/categorias.ts
+   
+   ✅ Usa FirebaseService en lugar de AuthService
    =================================== */
 
 import { Component, inject, signal } from '@angular/core';
@@ -9,7 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { CategoriasService } from '../../services/categorias.service';
 import { ProductosService } from '../../services/productos.service';
 import { NotificationService } from '../../services/notification.service';
-import { AuthService } from '../../services/auth.service';
+import { FirebaseService } from '../../services/firebase.service'; // ⚠️ CAMBIO: Usar FirebaseService
 import { Categoria } from '../../models/categoria.model';
 import { Usuario } from '../../models/usuario.model';
 
@@ -24,7 +26,7 @@ export class Categorias {
   private categoriasService = inject(CategoriasService);
   private productosService = inject(ProductosService);
   private notificationService = inject(NotificationService);
-  private authService = inject(AuthService);
+  private firebaseService = inject(FirebaseService); // ⚠️ CAMBIO: Inyectar FirebaseService
 
   // Datos
   categorias = this.categoriasService.categorias;
@@ -50,7 +52,8 @@ export class Categorias {
    * Obtener usuario actual
    */
   private obtenerUsuarioActual(): void {
-    this.usuarioActual = this.authService.obtenerUsuarioActual();
+    // ⚠️ CAMBIO: Usar firebaseService en lugar de authService
+    this.usuarioActual = this.firebaseService.obtenerUsuarioActual() || null;
 
     if (this.usuarioActual) {
       this.iniciales = this.usuarioActual.name
@@ -185,7 +188,8 @@ export class Categorias {
    * Es admin?
    */
   esAdmin(): boolean {
-    return this.usuarioActual?.role === 'admin';
+    // ⚠️ CAMBIO: Usar firebaseService
+    return this.firebaseService.esAdmin();
   }
 
   /**
