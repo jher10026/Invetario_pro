@@ -1,9 +1,9 @@
 /* ===================================
-   SERVICIO DE FIREBASE - SIN ROLES
+   SERVICIO DE FIREBASE - MEJORADO
    Archivo: src/app/services/firebase.service.ts
    
-   ✅ Todos los usuarios tienen permisos completos
-   ✅ Sin código admin
+   ✅ Registro con logout inmediato
+   ✅ Estado de "procesando registro"
    =================================== */
 
 import { Injectable, inject } from '@angular/core';
@@ -43,6 +43,10 @@ export class FirebaseService {
   private currentUserSubject = new BehaviorSubject<Usuario | null | undefined>(undefined);
   public currentUser$ = this.currentUserSubject.asObservable();
 
+  // 🆕 Estado para bloquear UI durante registro
+  private procesandoRegistroSubject = new BehaviorSubject<boolean>(false);
+  public procesandoRegistro$ = this.procesandoRegistroSubject.asObservable();
+
   constructor() {
     console.log('🔥 Firebase Service inicializado');
     this.inicializarAuthListener();
@@ -54,6 +58,12 @@ export class FirebaseService {
 
   private inicializarAuthListener(): void {
     onAuthStateChanged(this.auth, async (firebaseUser) => {
+      // 🔒 Si estamos procesando registro, ignorar cambios de auth
+      if (this.procesandoRegistroSubject.value) {
+        console.log('⏸️ Ignorando cambio de auth durante registro');
+        return;
+      }
+
       console.log('🔔 Firebase Auth cambió:', firebaseUser?.email || 'Sin usuario');
       
       if (firebaseUser) {
@@ -72,7 +82,7 @@ export class FirebaseService {
   // ============================================
 
   /**
-   * Registrar nuevo usuario (sin código admin)
+   * Registrar nuevo usuario (con logout automático)
    */
   async registrarUsuario(
     email: string,
@@ -81,6 +91,9 @@ export class FirebaseService {
   ): Promise<{ success: boolean; message: string }> {
     try {
       console.log('📝 Iniciando registro para:', email);
+
+      // 🔒 ACTIVAR estado de procesando
+      this.procesandoRegistroSubject.next(true);
 
       // Crear usuario en Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(
@@ -96,7 +109,7 @@ export class FirebaseService {
         uid: userCredential.user.uid,
         name: name,
         email: email,
-        role: 'user', // Todos son 'user' con permisos completos
+        role: 'user',
         createdAt: Timestamp.now()
       };
 
@@ -105,14 +118,21 @@ export class FirebaseService {
 
       console.log('✅ Datos guardados en Firestore:', usuarioData);
 
-      // 🔑 Cerrar sesión inmediatamente para forzar login manual
-await signOut(this.auth);
-console.log('🚪 Sesión cerrada - usuario debe hacer login');
+      // 🚪 CERRAR SESIÓN INMEDIATAMENTE
+      await signOut(this.auth);
+      console.log('🔓 Sesión cerrada - usuario debe iniciar sesión manualmente');
 
-return { success: true, message: '¡Registro exitoso!' };
+      // 🔓 DESACTIVAR estado de procesando (pequeño delay para suavidad)
+      setTimeout(() => {
+        this.procesandoRegistroSubject.next(false);
+      }, 500);
+
+      return { success: true, message: '¡Registro exitoso!' };
 
     } catch (error: any) {
       console.error('❌ Error en registro:', error);
+      // 🔓 Desactivar estado en caso de error
+      this.procesandoRegistroSubject.next(false);
       return this.manejarErrorAuth(error);
     }
   }
@@ -361,7 +381,7 @@ return { success: true, message: '¡Registro exitoso!' };
 
   private async obtenerDatosUsuario(uid: string): Promise<Usuario | null> {
     try {
-      console.log('📥 Buscando datos del usuario en Firestore, UID:', uid);
+      console.log('🔥 Buscando datos del usuario en Firestore, UID:', uid);
       
       const usuariosRef = collection(this.firestore, 'usuarios');
       const q = query(usuariosRef, where('uid', '==', uid));
@@ -376,11 +396,10 @@ return { success: true, message: '¡Registro exitoso!' };
           password: '',
           name: userData['name'],
           email: userData['email'],
-          role: 'user' // Siempre 'user'
+          role: 'user'
         };
       }
 
-      // Si no existe en Firestore, crear el documento
       const authUser = this.auth.currentUser;
       if (authUser) {
         console.warn('⚠️ Usuario no encontrado en Firestore, creando documento...');

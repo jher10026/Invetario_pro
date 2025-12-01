@@ -1,9 +1,9 @@
 /* ===================================
-   COMPONENTE DE LOGIN - SIN CÓDIGO ADMIN
+   COMPONENTE DE LOGIN - MEJORADO
    Archivo: src/app/components/login/login.ts
    
-   ✅ Sin campo de código admin
-   ✅ Todos los usuarios tienen permisos completos
+   ✅ Cambio inmediato a login después del registro
+   ✅ Animación de carga en login
    =================================== */
 
 import { Component, signal, inject, OnInit, OnDestroy } from '@angular/core';
@@ -35,7 +35,7 @@ export class Login implements OnInit, OnDestroy {
   loginEmail = signal('');
   loginPassword = signal('');
 
-  // Formulario de registro (sin código admin)
+  // Formulario de registro
   registroName = signal('');
   registroEmail = signal('');
   registroPassword = signal('');
@@ -117,7 +117,6 @@ export class Login implements OnInit, OnDestroy {
 
   /**
    * Login con cuenta de prueba
-   * 🧪 Útil para desarrollo y testing
    */
   loginPrueba(): void {
     this.loginEmail.set('prueba@inventario.com');
@@ -126,7 +125,7 @@ export class Login implements OnInit, OnDestroy {
   }
 
   /**
-   * Procesar registro (sin código admin)
+   * Procesar registro
    */
   async handleRegistro(): Promise<void> {
     this.limpiarMensajes();
@@ -165,7 +164,7 @@ export class Login implements OnInit, OnDestroy {
       if (resultado.success) {
         this.mensajeExito.set(resultado.message + ' Por favor inicia sesión.');
         
-        // Limpiar formulario y cambiar a login
+        // 🆕 Cambiar a login más rápido (1 segundo)
         setTimeout(() => {
           this.limpiarFormularios();
           this.mostrarLogin.set(true);
