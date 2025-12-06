@@ -1,9 +1,4 @@
-/* ===================================
-   COMPONENTE DE TOAST
-   Archivo: src/app/components/shared/toast/toast.component.ts
-   =================================== */
-
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../../services/notification.service';
 
@@ -11,33 +6,15 @@ import { NotificationService } from '../../../services/notification.service';
   selector: 'app-toast',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './toast.html',
-  styleUrl: './toast.css'
+  template: `
+    <!-- Este componente ya no se usa, las notificaciones las maneja NotificationContainer -->
+  `,
+  styles: [`
+    :host {
+      display: none;
+    }
+  `]
 })
 export class Toast {
-  private notificationService = inject(NotificationService);
-
-
-  /**
-   * Eliminar un toast
-   */
-  eliminarToast(id: string): void {
-    this.notificationService.eliminar(id);
-  }
-
-  /**
-   * Obtener icono según tipo
-   */
-  obtenerIcono(tipo: string): string {
-    switch (tipo) {
-      case 'success':
-        return '✓';
-      case 'error':
-        return '✕';
-      case 'info':
-        return 'ℹ';
-      default:
-        return '•';
-    }
-  }
+  constructor(private notificationService: NotificationService) {}
 }
