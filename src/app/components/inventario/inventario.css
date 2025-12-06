@@ -3,10 +3,17 @@
    Archivo: src/app/components/inventario/inventario.component.css
    =================================== */
 
+/* ✅ ESTA DEBE SER LA ÚNICA DEFINICIÓN */
+:host {
+  display: block;
+  width: 100%;
+}
+
 .inventario-container {
-  padding: 2rem;
+  width: 100%;
   max-width: 1400px;
   margin: 0 auto;
+  padding: 2rem;
 }
 
 .content-header {

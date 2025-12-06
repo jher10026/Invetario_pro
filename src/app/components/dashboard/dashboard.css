@@ -2,13 +2,18 @@
    ESTILOS DASHBOARD CON GRÁFICAS
    Archivo: src/app/components/dashboard/dashboard.component.css
    =================================== */
-
-.dashboard-container {
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+/* ✅ ESTA DEBE SER LA ÚNICA DEFINICIÓN */
+:host {
+  display: block;
+  width: 100%;
 }
 
+.dashboard-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
 .content-header {
   display: flex;
   justify-content: space-between;
