@@ -1,76 +1,151 @@
 /* ===================================
-   SERVICIO DE NOTIFICACIONES
-   Archivo: src/app/services/notification.service.ts
-   
-   ¿Qué hace? Gestiona los mensajes toast
+   SERVICIO DE NOTIFICACIONES - ACTUALIZADO
    =================================== */
 
-import { Injectable, signal } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 
-export interface Toast {
+export type NotificationType = 'success' | 'error' | 'warning' | 'info';
+
+// ✅ Exportar interfaz Notification
+export interface Notification {
   id: string;
-  mensaje: string;
-  tipo: 'success' | 'error' | 'info';
-  duracion?: number;
+  type: NotificationType;
+  title: string;
+  message: string;
+  timestamp: Date;
+  duration?: number;
+  icon?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class NotificationService {
-  private toastsSignal = signal<Toast[]>([]);
-  public toasts = this.toastsSignal.asReadonly();
+  // ✅ Hacer público notifications$
+  private notificationsSubject = new BehaviorSubject<Notification[]>([]);
+  public notifications$ = this.notificationsSubject.asObservable();
 
-  constructor() {}
+  private queue: Notification[] = [];
 
-  /**
-   * Mostrar notificación de éxito
-   */
-  exito(mensaje: string, duracion: number = 3000): void {
-    this.mostrar(mensaje, 'success', duracion);
+  constructor() {
+    console.log('🔔 NotificationService inicializado');
   }
 
-  /**
-   * Mostrar notificación de error
-   */
-  error(mensaje: string, duracion: number = 3000): void {
-    this.mostrar(mensaje, 'error', duracion);
+  success(title: string, message: string, duration: number = 3000): void {
+    this.mostrar({
+      id: this.generarId(),
+      type: 'success',
+      title,
+      message,
+      timestamp: new Date(),
+      duration,
+      icon: '✅'
+    });
   }
 
-  /**
-   * Mostrar notificación de información
-   */
-  info(mensaje: string, duracion: number = 3000): void {
-    this.mostrar(mensaje, 'info', duracion);
+  error(title: string, message: string, duration: number = 4000): void {
+    this.mostrar({
+      id: this.generarId(),
+      type: 'error',
+      title,
+      message,
+      timestamp: new Date(),
+      duration,
+      icon: '❌'
+    });
   }
 
-  /**
-   * Mostrar notificación genérica
-   */
-  private mostrar(mensaje: string, tipo: 'success' | 'error' | 'info', duracion: number): void {
-    const id = Math.random().toString(36).substring(7);
-
-    const toast: Toast = {
-      id,
-      mensaje,
-      tipo,
-      duracion
-    };
-
-    const toastActual = this.toastsSignal();
-    this.toastsSignal.set([...toastActual, toast]);
-
-    // Eliminar después de la duración
-    setTimeout(() => {
-      this.eliminar(id);
-    }, duracion);
+  warning(title: string, message: string, duration: number = 3500): void {
+    this.mostrar({
+      id: this.generarId(),
+      type: 'warning',
+      title,
+      message,
+      timestamp: new Date(),
+      duration,
+      icon: '⚠️'
+    });
   }
 
-  /**
-   * Eliminar una notificación
-   */
+  info(title: string, message: string, duration: number = 3000): void {
+    this.mostrar({
+      id: this.generarId(),
+      type: 'info',
+      title,
+      message,
+      timestamp: new Date(),
+      duration,
+      icon: 'ℹ️'
+    });
+  }
+
+  private mostrar(notification: Notification): void {
+    this.queue.push(notification);
+    const current = this.notificationsSubject.value;
+    this.notificationsSubject.next([...current, notification]);
+
+    if (notification.duration) {
+      setTimeout(() => {
+        this.eliminar(notification.id);
+      }, notification.duration);
+    }
+  }
+
   eliminar(id: string): void {
-    const toasts = this.toastsSignal().filter(t => t.id !== id);
-    this.toastsSignal.set(toasts);
+    const current = this.notificationsSubject.value;
+    const filtered = current.filter(n => n.id !== id);
+    this.notificationsSubject.next(filtered);
+    this.queue = this.queue.filter(n => n.id !== id);
+  }
+
+  private generarId(): string {
+    return `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  // ✅ Métodos específicos que faltan
+  productoCreado(nombre: string): void {
+    this.success('Producto Creado', `"${nombre}" fue agregado exitosamente`);
+  }
+
+  productoActualizado(nombre: string): void {
+    this.info('Producto Actualizado', `"${nombre}" fue modificado`);
+  }
+
+  productoEliminado(nombre: string): void {
+    this.warning('Producto Eliminado', `"${nombre}" fue eliminado`);
+  }
+
+  categoriaCreada(nombre: string): void {
+    this.success('Categoría Creada', `"${nombre}" fue agregada`);
+  }
+
+  categoriaActualizada(nombre: string): void {
+    this.info('Categoría Actualizada', `"${nombre}" fue modificada`);
+  }
+
+  categoriaEliminada(nombre: string): void {
+    this.warning('Categoría Eliminada', `"${nombre}" fue eliminada`);
+  }
+
+  // ✅ Métodos que faltaban
+  imagenSubida(): void {
+    this.success('Imagen Subida', 'La imagen se cargó correctamente');
+  }
+
+  errorImagen(mensaje: string): void {
+    this.error('Error en Imagen', mensaje);
+  }
+
+  loginExitoso(nombre: string): void {
+    this.success('¡Bienvenido!', `Hola ${nombre}, sesión iniciada`);
+  }
+
+  logoutExitoso(): void {
+    this.info('Sesión Cerrada', 'Hasta pronto');
+  }
+
+  errorAutenticacion(mensaje: string): void {
+    this.error('Error de Autenticación', mensaje);
   }
 }
