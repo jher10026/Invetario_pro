@@ -16,7 +16,7 @@ import { NotificationService } from '../../../services/notification.service';
 })
 export class Toast {
   private notificationService = inject(NotificationService);
-  toasts = this.notificationService.toasts;
+
 
   /**
    * Eliminar un toast
