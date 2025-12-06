@@ -72,7 +72,7 @@ export class Sidebar implements OnInit {
     const form = this.formReporte();
 
     if (!form.tipo || !form.descripcion) {
-      this.notificationService.error('Por favor completa todos los campos');
+      this.notificationService.error('Error','Por favor completa todos los campos');
       return;
     }
 
