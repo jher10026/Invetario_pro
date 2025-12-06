@@ -167,22 +167,22 @@ export class Inventario {
 
     // Validaciones
     if (!form.nombre.trim()) {
-      this.notificationService.error('El nombre del producto es requerido');
+      this.notificationService.error('Error','El nombre del producto es requerido');
       return;
     }
 
     if (!form.categoria) {
-      this.notificationService.error('Debes seleccionar una categoría');
+      this.notificationService.error('Error','Debes seleccionar una categoría');
       return;
     }
 
     if (form.precio <= 0) {
-      this.notificationService.error('El precio debe ser mayor a 0');
+      this.notificationService.error('Error','El precio debe ser mayor a 0');
       return;
     }
 
     if (form.stock < 0) {
-      this.notificationService.error('El stock no puede ser negativo');
+      this.notificationService.error('Error','El stock no puede ser negativo');
       return;
     }
 
@@ -206,7 +206,7 @@ export class Inventario {
           this.notificationService.exito('Producto actualizado exitosamente');
           this.cerrarModal();
         } else {
-          this.notificationService.error('Error al actualizar el producto');
+          this.notificationService.error('Error','Error al actualizar el producto');
         }
       } else {
         // Crear nuevo
@@ -222,12 +222,12 @@ export class Inventario {
           this.notificationService.exito('Producto agregado exitosamente');
           this.cerrarModal();
         } else {
-          this.notificationService.error('Error al agregar el producto');
+          this.notificationService.error('Error','Error al agregar el producto');
         }
       }
     } catch (error) {
       console.error('Error al guardar producto:', error);
-      this.notificationService.error('Error inesperado al guardar');
+      this.notificationService.error('Error','Error inesperado al guardar');
     } finally {
       this.guardando.set(false);
     }
@@ -249,11 +249,11 @@ export class Inventario {
       if (eliminado) {
         this.notificationService.exito('Producto eliminado exitosamente');
       } else {
-        this.notificationService.error('Error al eliminar el producto');
+        this.notificationService.error('Error','Error al eliminar el producto');
       }
     } catch (error) {
       console.error('Error al eliminar producto:', error);
-      this.notificationService.error('Error inesperado al eliminar');
+      this.notificationService.error('Error','Error inesperado al eliminar');
     } finally {
       this.guardando.set(false);
     }
