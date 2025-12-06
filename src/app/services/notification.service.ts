@@ -56,6 +56,10 @@ export class NotificationService {
     });
   }
 
+  exito(message: string, duration: number = 3000): void {
+    this.success('Éxito', message, duration);
+  }
+
   warning(title: string, message: string, duration: number = 3500): void {
     this.mostrar({
       id: this.generarId(),
