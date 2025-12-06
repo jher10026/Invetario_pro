@@ -1,17 +1,28 @@
 <!-- ===================================
-     TEMPLATE DEL COMPONENTE RAÍZ
+     TEMPLATE RAÍZ - CON NOTIFICACIONES
      Archivo: src/app/app.html
      =================================== -->
 
-<div class="app-wrapper">
-  <!-- Mostrar sidebar solo si usuario está autenticado -->
+<!-- Contenedor de notificaciones (siempre visible) -->
+<app-notification-container></app-notification-container>
+
+<!-- Layout principal -->
+<div class="app-container">
+  <!-- Sidebar solo si está autenticado -->
   <app-sidebar *ngIf="usuarioAutenticado$()"></app-sidebar>
 
   <!-- Contenido principal -->
-  <main class="main-content">
-    <router-outlet></router-outlet>
-  </main>
+  <main class="main-content" [class.authenticated]="usuarioAutenticado$()">
+    <!-- Loading inicial -->
+    <div *ngIf="cargandoAuth()" class="loading-screen">
+      <div class="spinner"></div>
+      <p>Cargando...</p>
+    </div>
 
-  <!-- Componente de notificaciones (siempre visible) -->
-  <app-toast></app-toast>
+    <!-- Router Outlet -->
+    <router-outlet *ngIf="!cargandoAuth()"></router-outlet>
+  </main>
 </div>
+
+<!-- Toast legacy (puedes mantenerlo o quitarlo) -->
+<app-toast></app-toast>

@@ -1,8 +1,18 @@
+/* ===================================
+   CONFIGURACIÓN ACTUALIZADA CON STORAGE Y ANIMACIONES
+   Archivo: src/app/app.config.ts
+   
+   ✅ Firebase Storage agregado
+   ✅ Animaciones habilitadas
+   =================================== */
+
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideAuth, getAuth } from '@angular/fire/auth';
 import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { provideStorage, getStorage } from '@angular/fire/storage'; // 🆕 Storage
 import { routes } from './app.routes';
 
 const firebaseConfig = {
@@ -19,8 +29,10 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
+    provideAnimations(), // 🆕 Animaciones habilitadas
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideAuth(() => getAuth()),
-    provideFirestore(() => getFirestore())
+    provideFirestore(() => getFirestore()),
+    provideStorage(() => getStorage()) // 🆕 Storage habilitado
   ]
 };

@@ -1,9 +1,9 @@
 /* ===================================
-   SERVICIO DE FIREBASE - MEJORADO
+   SERVICIO DE FIREBASE - CON SISTEMA DE ROLES
    Archivo: src/app/services/firebase.service.ts
    
-   ✅ Registro con logout inmediato
-   ✅ Estado de "procesando registro"
+   ✅ Sistema de roles implementado
+   ✅ Métodos para verificar permisos
    =================================== */
 
 import { Injectable, inject } from '@angular/core';
@@ -31,7 +31,7 @@ import {
 import { BehaviorSubject } from 'rxjs';
 import { Producto } from '../models/producto.model';
 import { Categoria } from '../models/categoria.model';
-import { Usuario } from '../models/usuario.model';
+import { Usuario, UserRole, RolePermissions } from '../models/usuario.model';
 
 @Injectable({
   providedIn: 'root'
@@ -43,7 +43,6 @@ export class FirebaseService {
   private currentUserSubject = new BehaviorSubject<Usuario | null | undefined>(undefined);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  // 🆕 Estado para bloquear UI durante registro
   private procesandoRegistroSubject = new BehaviorSubject<boolean>(false);
   public procesandoRegistro$ = this.procesandoRegistroSubject.asObservable();
 
@@ -58,7 +57,6 @@ export class FirebaseService {
 
   private inicializarAuthListener(): void {
     onAuthStateChanged(this.auth, async (firebaseUser) => {
-      // 🔒 Si estamos procesando registro, ignorar cambios de auth
       if (this.procesandoRegistroSubject.value) {
         console.log('⏸️ Ignorando cambio de auth durante registro');
         return;
@@ -81,21 +79,17 @@ export class FirebaseService {
   //  AUTENTICACIÓN
   // ============================================
 
-  /**
-   * Registrar nuevo usuario (con logout automático)
-   */
   async registrarUsuario(
     email: string,
     password: string,
-    name: string
+    name: string,
+    role: UserRole = 'user' // 🆕 Parámetro de rol
   ): Promise<{ success: boolean; message: string }> {
     try {
-      console.log('📝 Iniciando registro para:', email);
+      console.log('📝 Iniciando registro para:', email, 'con rol:', role);
 
-      // 🔒 ACTIVAR estado de procesando
       this.procesandoRegistroSubject.next(true);
 
-      // Crear usuario en Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(
         this.auth,
         email,
@@ -104,12 +98,12 @@ export class FirebaseService {
 
       console.log('✅ Usuario creado en Auth:', userCredential.user.uid);
 
-      // Guardar datos adicionales en Firestore
+      // 🆕 Guardar con rol
       const usuarioData = {
         uid: userCredential.user.uid,
         name: name,
         email: email,
-        role: 'user',
+        role: role, // 🆕 Rol asignado
         createdAt: Timestamp.now()
       };
 
@@ -118,11 +112,9 @@ export class FirebaseService {
 
       console.log('✅ Datos guardados en Firestore:', usuarioData);
 
-      // 🚪 CERRAR SESIÓN INMEDIATAMENTE
       await signOut(this.auth);
       console.log('🔓 Sesión cerrada - usuario debe iniciar sesión manualmente');
 
-      // 🔓 DESACTIVAR estado de procesando (pequeño delay para suavidad)
       setTimeout(() => {
         this.procesandoRegistroSubject.next(false);
       }, 500);
@@ -131,20 +123,23 @@ export class FirebaseService {
 
     } catch (error: any) {
       console.error('❌ Error en registro:', error);
-      // 🔓 Desactivar estado en caso de error
       this.procesandoRegistroSubject.next(false);
       return this.manejarErrorAuth(error);
     }
   }
 
-  /**
-   * Iniciar sesión
-   */
   async login(email: string, password: string): Promise<{ success: boolean; message: string }> {
     try {
       console.log('🔐 Iniciando sesión:', email);
 
       await signInWithEmailAndPassword(this.auth, email, password);
+      
+      // 🆕 Actualizar lastLogin
+      const user = this.auth.currentUser;
+      if (user) {
+        const usuarioRef = doc(this.firestore, 'usuarios', user.uid);
+        await updateDoc(usuarioRef, { lastLogin: Timestamp.now() });
+      }
       
       console.log('✅ Sesión iniciada correctamente');
       return { success: true, message: 'Sesión iniciada correctamente' };
@@ -155,9 +150,6 @@ export class FirebaseService {
     }
   }
 
-  /**
-   * Cerrar sesión
-   */
   async logout(): Promise<void> {
     try {
       console.log('👋 Cerrando sesión...');
@@ -168,30 +160,103 @@ export class FirebaseService {
     }
   }
 
-  /**
-   * Obtener usuario actual (síncrono)
-   */
   obtenerUsuarioActual(): Usuario | null | undefined {
     return this.currentUserSubject.value;
   }
 
-  /**
-   * Verificar si está autenticado
-   */
   estaAutenticado(): boolean {
     const usuario = this.currentUserSubject.value;
     return usuario !== null && usuario !== undefined;
   }
 
+  // ============================================
+  //  🆕 MÉTODOS DE ROLES Y PERMISOS
+  // ============================================
+
   /**
-   * Verificar si es admin (siempre true si está autenticado)
+   * Obtener rol del usuario actual
+   */
+  obtenerRolActual(): UserRole | null {
+    const usuario = this.currentUserSubject.value;
+    return usuario ? usuario.role : null;
+  }
+
+  /**
+   * Verificar si el usuario tiene un rol específico
+   */
+  tieneRol(rol: UserRole): boolean {
+    const usuario = this.currentUserSubject.value;
+    return usuario?.role === rol;
+  }
+
+  /**
+   * Verificar si el usuario tiene alguno de los roles especificados
+   */
+  tieneAlgunRol(roles: UserRole[]): boolean {
+    const usuario = this.currentUserSubject.value;
+    return usuario ? roles.includes(usuario.role) : false;
+  }
+
+  /**
+   * Verificar si es admin
    */
   esAdmin(): boolean {
-    return this.estaAutenticado();
+    return this.tieneRol('admin');
+  }
+
+  /**
+   * Verificar si es usuario normal
+   */
+  esUsuario(): boolean {
+    return this.tieneRol('user');
+  }
+
+  /**
+   * Verificar si es invitado
+   */
+  esInvitado(): boolean {
+    return this.tieneRol('guest');
+  }
+
+  /**
+   * Obtener permisos del usuario actual
+   */
+  obtenerPermisos() {
+    const rol = this.obtenerRolActual();
+    return rol ? RolePermissions[rol] : null;
+  }
+
+  /**
+   * Verificar si tiene permiso específico
+   */
+  tienePermiso(permiso: keyof typeof RolePermissions.admin): boolean {
+    const permisos = this.obtenerPermisos();
+    return permisos ? permisos[permiso] : false;
+  }
+
+  /**
+   * 🆕 Actualizar rol de un usuario (solo admin)
+   */
+  async actualizarRol(userId: string, nuevoRol: UserRole): Promise<boolean> {
+    try {
+      if (!this.esAdmin()) {
+        console.error('❌ Solo admins pueden cambiar roles');
+        return false;
+      }
+
+      const usuarioRef = doc(this.firestore, 'usuarios', userId);
+      await updateDoc(usuarioRef, { role: nuevoRol });
+      
+      console.log(`✅ Rol actualizado a: ${nuevoRol}`);
+      return true;
+    } catch (error) {
+      console.error('❌ Error al actualizar rol:', error);
+      return false;
+    }
   }
 
   // ============================================
-  //  PRODUCTOS
+  //  PRODUCTOS (sin cambios)
   // ============================================
 
   async obtenerProductos(): Promise<Producto[]> {
@@ -267,7 +332,7 @@ export class FirebaseService {
   }
 
   // ============================================
-  //  CATEGORÍAS
+  //  CATEGORÍAS (sin cambios)
   // ============================================
 
   async obtenerCategorias(): Promise<Categoria[]> {
@@ -396,7 +461,8 @@ export class FirebaseService {
           password: '',
           name: userData['name'],
           email: userData['email'],
-          role: 'user'
+          role: userData['role'] || 'user', // 🆕 Incluir rol
+          photoURL: userData['photoURL'] || undefined // 🆕 Incluir foto
         };
       }
 
@@ -408,7 +474,7 @@ export class FirebaseService {
           uid: authUser.uid,
           name: authUser.displayName || authUser.email?.split('@')[0] || 'Usuario',
           email: authUser.email || '',
-          role: 'user',
+          role: 'user', // 🆕 Rol por defecto
           createdAt: Timestamp.now()
         };
 
@@ -422,7 +488,7 @@ export class FirebaseService {
           password: '',
           name: nuevoUsuario.name,
           email: nuevoUsuario.email,
-          role: 'user'
+          role: nuevoUsuario.role as UserRole
         };
       }
 

@@ -1,16 +1,19 @@
 /* ===================================
-   COMPONENTE RAÍZ - FASE 2
+   COMPONENTE RAÍZ - CON NOTIFICACIONES
    Archivo: src/app/app.ts
    
-   ✅ Actualizado para usar Firebase
+   ✅ Notificaciones integradas
+   ✅ Animaciones habilitadas
    =================================== */
 
 import { Component, signal, OnInit } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FirebaseService } from './services/firebase.service';
+import { NotificationService } from './services/notification.service';
 import { Sidebar } from './components/shared/sidebar/sidebar';
 import { Toast } from './components/shared/toast/toast';
+import { NotificationContainerComponent } from './components/notifications/notification-container.component';
 
 @Component({
   selector: 'app-root',
@@ -18,7 +21,8 @@ import { Toast } from './components/shared/toast/toast';
     CommonModule,
     RouterOutlet,
     Sidebar,
-    Toast
+    Toast,
+    NotificationContainerComponent // 🆕 Contenedor de notificaciones
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
@@ -26,12 +30,12 @@ import { Toast } from './components/shared/toast/toast';
 export class App implements OnInit {
   protected readonly title = signal('inventario_pro1');
   
-  // Observable que indica si el usuario está autenticado
   usuarioAutenticado$ = signal(false);
   cargandoAuth = signal(true);
 
   constructor(
     private firebaseService: FirebaseService,
+    private notificationService: NotificationService, // 🆕 Servicio de notificaciones
     private router: Router
   ) {}
 
@@ -42,19 +46,16 @@ export class App implements OnInit {
     this.firebaseService.currentUser$.subscribe(user => {
       console.log('👤 App - Estado de usuario:', user);
 
-      // undefined = cargando
       if (user === undefined) {
         this.cargandoAuth.set(true);
         this.usuarioAutenticado$.set(false);
         return;
       }
 
-      // null = no autenticado
       if (user === null) {
         this.cargandoAuth.set(false);
         this.usuarioAutenticado$.set(false);
         
-        // Redirigir a login si no está en la página de login
         if (!this.router.url.includes('login')) {
           console.log('➡️ Redirigiendo a login');
           this.router.navigate(['/login']);
@@ -62,10 +63,15 @@ export class App implements OnInit {
         return;
       }
 
-      // Usuario autenticado
+      // 🆕 Notificar login exitoso
       this.cargandoAuth.set(false);
       this.usuarioAutenticado$.set(true);
       console.log('✅ Usuario autenticado:', user.name);
+      
+      // Solo mostrar notificación si no venía de login
+      if (this.router.url === '/login') {
+        this.notificationService.loginExitoso(user.name);
+      }
     });
   }
 }
