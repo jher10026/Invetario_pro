@@ -103,12 +103,12 @@ export class Categorias {
 
     // Validaciones
     if (!form.nombre.trim()) {
-      this.notificationService.error('El nombre de la categoría es requerido');
+      this.notificationService.error('Error','El nombre de la categoría es requerido');
       return;
     }
 
     if (!form.color) {
-      this.notificationService.error('Debes seleccionar un color');
+      this.notificationService.error('Error','Debes seleccionar un color');
       return;
     }
 
@@ -128,7 +128,7 @@ export class Categorias {
     } else {
       // Verificar que no exista
       if (this.categoriasService.existe(form.nombre)) {
-        this.notificationService.error('Esta categoría ya existe');
+        this.notificationService.error('Error','Esta categoría ya existe');
         return;
       }
 
@@ -152,8 +152,7 @@ export class Categorias {
     const productos = this.productosService.filtrarPorCategoria(nombre);
 
     if (productos.length > 0) {
-      this.notificationService.error(
-        `No se puede eliminar. Esta categoría tiene ${productos.length} producto(s) asociado(s)`
+      this.notificationService.error('Error',`No se puede eliminar. Esta categoría tiene ${productos.length} producto(s) asociado(s)`
       );
       return;
     }
