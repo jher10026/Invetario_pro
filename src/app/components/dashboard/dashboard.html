@@ -30,50 +30,25 @@
   </div>
 
   <!-- Gráficas -->
+<!-- Gráficas con Chart.js -->
   <div class="charts-grid" *ngIf="productos().length > 0; else sinProductos">
-    <!-- Gráfica de categorías -->
+    <!-- Gráfica de barras -->
     <div class="chart-card">
       <h2>📊 Distribución por Categoría</h2>
       <div class="chart-content">
-        <div *ngIf="datosGraficaCategorias().length > 0; else sinDatos" class="bars-chart">
-          <div *ngFor="let dato of datosGraficaCategorias()" class="chart-bar">
-            <div class="bar-label">{{ dato.nombre }}</div>
-            <div class="bar-container">
-              <div 
-                class="bar" 
-                [style.width.%]="dato.porcentaje"
-                [style.background]="dato.color"
-              ></div>
-            </div>
-            <div class="bar-value">{{ dato.stock }} unidades ({{ dato.porcentaje.toFixed(1) }}%)</div>
-          </div>
+        <div class="chart-container">
+          <canvas #chartCategorias></canvas>
         </div>
-        <ng-template #sinDatos>
-          <p class="no-data">Sin datos</p>
-        </ng-template>
       </div>
     </div>
 
-    <!-- Top Stock -->
+    <!-- Gráfica circular -->
     <div class="chart-card">
-      <h2>📈 Top Stock de Productos</h2>
+      <h2>💵 Valor Total por Categoría</h2>
       <div class="chart-content">
-        <div *ngIf="topProductos().length > 0; else sinDatos2" class="top-products">
-          <div *ngFor="let producto of topProductos()" class="product-bar">
-            <div class="product-name">{{ producto.nombre }}</div>
-            <div class="product-bar-container">
-              <div 
-                class="bar" 
-                [style.width.%]="(producto.stock / (topProductos()[0]?.stock || 1)) * 100"
-                [style.background]="obtenerColorCategoria(producto.categoria)"
-              ></div>
-            </div>
-            <div class="product-stock">{{ producto.stock }}</div>
-          </div>
+        <div class="chart-container">
+          <canvas #chartCircular></canvas>
         </div>
-        <ng-template #sinDatos2>
-          <p class="no-data">Sin datos</p>
-        </ng-template>
       </div>
     </div>
   </div>
