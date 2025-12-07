@@ -11,6 +11,8 @@ import { Dashboard } from './components/dashboard/dashboard';
 import { Inventario } from './components/inventario/inventario';
 import { Categorias } from './components/categorias/categorias';
 import { authGuard } from './guards/auth.guard'; // ⚠️ Importa authGuard (funcional)
+import { roleGuard } from './guards/role.guard';
+import { Reportes } from './components/reportes/reportes';
 
 export const routes: Routes = [
   // Ruta de login (sin protección)
@@ -24,6 +26,12 @@ export const routes: Routes = [
     path: 'dashboard',
     component: Dashboard,
     canActivate: [authGuard] // ⚠️ usa authGuard (minúscula)
+  },
+
+  {
+    path: 'reportes',
+    component: Reportes,
+    canActivate: [authGuard, roleGuard]
   },
 
   {
