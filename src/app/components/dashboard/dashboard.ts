@@ -259,6 +259,12 @@ private crearGraficaBarras(): void {
           bodyColor: '#fff',
           borderColor: '#4f46e5',
           borderWidth: 1,
+          titleFont: {
+            size: 13
+          },
+          bodyFont: {
+            size: 12
+          },
           callbacks: {
             label: (context) => {
               return `Stock: ${context.parsed.y} unidades`;
@@ -269,11 +275,23 @@ private crearGraficaBarras(): void {
       scales: {
         y: {
           beginAtZero: true,
+          ticks: {
+            font: {
+              size: window.innerWidth < 768 ? 10 : 12
+            }
+          },
           grid: {
             color: 'rgba(0, 0, 0, 0.05)'
           }
         },
         x: {
+          ticks: {
+            font: {
+              size: window.innerWidth < 768 ? 10 : 12
+            },
+            maxRotation: window.innerWidth < 768 ? 45 : 0,
+            minRotation: window.innerWidth < 768 ? 45 : 0
+          },
           grid: {
             display: false
           }
@@ -315,10 +333,12 @@ private crearGraficaCircular(): void {
         legend: {
           position: 'bottom',
           labels: {
-            padding: 15,
+            padding: window.innerWidth < 768 ? 10 : 15,
             font: {
-              size: 12
-            }
+              size: window.innerWidth < 768 ? 10 : 12
+            },
+            boxWidth: window.innerWidth < 768 ? 12 : 15,
+            boxHeight: window.innerWidth < 768 ? 12 : 15
           }
         },
         tooltip: {
@@ -328,6 +348,12 @@ private crearGraficaCircular(): void {
           bodyColor: '#fff',
           borderColor: '#4f46e5',
           borderWidth: 1,
+          titleFont: {
+            size: 13
+          },
+          bodyFont: {
+            size: 12
+          },
           callbacks: {
             label: (context) => {
               const valor = context.parsed as number;
