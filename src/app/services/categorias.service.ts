@@ -1,18 +1,21 @@
 /* ===================================
-   SERVICIO DE CATEGORÍAS
+   SERVICIO DE CATEGORÍAS - CORREGIDO CON FIREBASE
    Archivo: src/app/services/categorias.service.ts
    
-   ¿Qué hace? Gestiona todas las categorías
+   ✅ Ahora guarda en Firestore
+   ✅ Sincronización en tiempo real
    =================================== */
 
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Categoria } from '../models/categoria.model';
-import { StorageService } from './storage.service';
+import { FirebaseService } from './firebase.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CategoriasService {
+  private firebaseService = inject(FirebaseService);
+
   // Signal con las categorías
   private categoriasSignal = signal<Categoria[]>([]);
   
@@ -27,18 +30,29 @@ export class CategoriasService {
     { id: 4, nombre: 'Gaming', color: '#a855f7' }
   ];
 
-  constructor(private storageService: StorageService) {
+  constructor() {
     this.cargarCategorias();
+    
+    // 🔄 Recargar cuando cambie el usuario
+    this.firebaseService.currentUser$.subscribe(user => {
+      if (user) {
+        this.cargarCategorias();
+      }
+    });
   }
 
   /**
-   * Cargar categorías del storage
+   * Cargar categorías desde Firebase
    */
-  private cargarCategorias(): void {
-    const categoriasGuardadas = this.storageService.obtenerCategorias<Categoria>(
-      this.categoriasPorDefecto
-    );
-    this.categoriasSignal.set(categoriasGuardadas);
+  private async cargarCategorias(): Promise<void> {
+    try {
+      const categorias = await this.firebaseService.obtenerCategorias();
+      this.categoriasSignal.set(categorias);
+      console.log('✅ Categorías cargadas desde Firebase:', categorias);
+    } catch (error) {
+      console.error('❌ Error al cargar categorías:', error);
+      this.categoriasSignal.set(this.categoriasPorDefecto);
+    }
   }
 
   /**
@@ -63,68 +77,115 @@ export class CategoriasService {
   }
 
   /**
-   * Agregar nueva categoría
+   * Agregar nueva categoría (ahora guarda en Firebase)
    */
-  agregar(categoria: Omit<Categoria, 'id'>): Categoria {
-    const nuevaCategoria: Categoria = {
-      id: Date.now(),
-      ...categoria
-    };
-
-    const actuales = this.categoriasSignal();
-    this.categoriasSignal.set([...actuales, nuevaCategoria]);
-    this.guardarEnStorage();
-
-    return nuevaCategoria;
+  async agregar(categoria: Omit<Categoria, 'id'>): Promise<Categoria | null> {
+    try {
+      console.log('💾 Guardando categoría en Firebase:', categoria);
+      
+      // 🔥 Guardar en Firebase
+      const nuevaCategoria = await this.firebaseService.agregarCategoria(categoria);
+      
+      if (nuevaCategoria) {
+        // Actualizar signal local
+        const actuales = this.categoriasSignal();
+        this.categoriasSignal.set([...actuales, nuevaCategoria]);
+        console.log('✅ Categoría guardada exitosamente');
+        return nuevaCategoria;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('❌ Error al agregar categoría:', error);
+      return null;
+    }
   }
 
   /**
-   * Actualizar categoría existente
+   * Actualizar categoría existente (ahora actualiza en Firebase)
    */
-  actualizar(id: number, categoria: Partial<Categoria>): boolean {
-    const actuales = this.categoriasSignal();
-    const index = actuales.findIndex(c => c.id === id);
+  async actualizar(id: number, cambios: Partial<Categoria>): Promise<boolean> {
+    try {
+      const actuales = this.categoriasSignal();
+      const categoria = actuales.find(c => c.id === id);
 
-    if (index === -1) {
+      if (!categoria) {
+        console.error('❌ Categoría no encontrada');
+        return false;
+      }
+
+      // 🔥 Actualizar en Firebase
+      const firestoreId = (categoria as any)._firestoreId;
+      if (firestoreId) {
+        const actualizado = await this.firebaseService.actualizarCategoria(
+          firestoreId,
+          cambios
+        );
+
+        if (actualizado) {
+          // Actualizar signal local
+          const index = actuales.findIndex(c => c.id === id);
+          actuales[index] = { ...actuales[index], ...cambios };
+          this.categoriasSignal.set([...actuales]);
+          console.log('✅ Categoría actualizada en Firebase');
+          return true;
+        }
+      }
+
+      return false;
+    } catch (error) {
+      console.error('❌ Error al actualizar categoría:', error);
       return false;
     }
-
-    actuales[index] = { ...actuales[index], ...categoria };
-    this.categoriasSignal.set([...actuales]);
-    this.guardarEnStorage();
-
-    return true;
   }
 
   /**
-   * Eliminar categoría
+   * Eliminar categoría (ahora elimina de Firebase)
    */
-  eliminar(id: number): boolean {
-    const actuales = this.categoriasSignal();
-    const index = actuales.findIndex(c => c.id === id);
+  async eliminar(id: number): Promise<boolean> {
+    try {
+      const actuales = this.categoriasSignal();
+      const categoria = actuales.find(c => c.id === id);
 
-    if (index === -1) {
+      if (!categoria) {
+        console.error('❌ Categoría no encontrada');
+        return false;
+      }
+
+      // 🔥 Eliminar de Firebase
+      const firestoreId = (categoria as any)._firestoreId;
+      if (firestoreId) {
+        const eliminado = await this.firebaseService.eliminarCategoria(firestoreId);
+
+        if (eliminado) {
+          // Actualizar signal local
+          const nuevasCategorias = actuales.filter(c => c.id !== id);
+          this.categoriasSignal.set(nuevasCategorias);
+          console.log('✅ Categoría eliminada de Firebase');
+          return true;
+        }
+      }
+
+      return false;
+    } catch (error) {
+      console.error('❌ Error al eliminar categoría:', error);
       return false;
     }
-
-    actuales.splice(index, 1);
-    this.categoriasSignal.set([...actuales]);
-    this.guardarEnStorage();
-
-    return true;
   }
 
   /**
    * Verificar si una categoría existe
    */
   existe(nombre: string): boolean {
-    return this.categoriasSignal().some(c => c.nombre === nombre);
+    return this.categoriasSignal().some(
+      c => c.nombre.toLowerCase() === nombre.toLowerCase()
+    );
   }
 
   /**
-   * Guardar en storage
+   * Recargar categorías desde Firebase
    */
-  private guardarEnStorage(): void {
-    this.storageService.guardarCategorias(this.categoriasSignal());
+  async recargar(): Promise<void> {
+    await this.cargarCategorias();
   }
 }
