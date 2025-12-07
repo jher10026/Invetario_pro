@@ -5,7 +5,7 @@
    ✅ Actualizado para Firestore
    =================================== */
 
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FirebaseService } from '../../services/firebase.service';
 import { ProductosService } from '../../services/productos.service';
@@ -125,12 +125,23 @@ export class Dashboard {
     }));
   });
 
-  constructor() {
-    this.obtenerUsuarioActual();
-      // Recrear gráficas cuando cambien los datos
-      this.productos().length; // Trigger reactivo
-      this.categorias().length; // Trigger reactivo
-  }
+constructor() {
+  this.obtenerUsuarioActual();
+  
+  // 🔄 Efecto para recrear gráficas cuando cambien los datos
+  effect(() => {
+    // Observar cambios en productos y categorías
+    const prods = this.productos();
+    const cats = this.categorias();
+    
+    // Recrear gráficas si hay datos y las vistas están listas
+    if (prods.length > 0 && cats.length > 0) {
+      setTimeout(() => {
+        this.crearGraficas();
+      }, 100);
+    }
+  });
+}
 
   /**
    * Obtener usuario actual
