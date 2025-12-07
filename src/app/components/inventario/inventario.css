@@ -421,3 +421,8 @@ td {
     max-width: 90vw;
   }
 }
+.solo-lectura {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-style: italic;
+}
