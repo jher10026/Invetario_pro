@@ -17,6 +17,7 @@
     <div class="table-header">
       <h2>📋 Lista de Productos</h2>
       <button
+        *ngIf="usuarioActual?.role === 'admin'"
         class="btn btn-primary"
         (click)="abrirModalNuevo()"
         [disabled]="guardando()"
@@ -117,6 +118,7 @@
             </td>
             <td class="actions">
               <button
+                *ngIf="usuarioActual?.role === 'admin'"
                 class="btn-icon edit"
                 (click)="abrirModalEditar(producto)"
                 [disabled]="guardando()"
@@ -125,6 +127,7 @@
                 ✏️
               </button>
               <button
+                *ngIf="usuarioActual?.role === 'admin'"
                 class="btn-icon delete"
                 (click)="eliminarProducto(producto.id, producto.nombre)"
                 [disabled]="guardando()"
@@ -132,6 +135,9 @@
               >
                 🗑️
               </button>
+              <span *ngIf="usuarioActual?.role !== 'admin'" class="solo-lectura">
+                👁️ Solo lectura
+              </span>
             </td>
           </tr>
         </tbody>
