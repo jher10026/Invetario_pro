@@ -187,7 +187,8 @@ export class FirebaseService {
    * Verificar si es admin (siempre true si está autenticado)
    */
   esAdmin(): boolean {
-    return this.estaAutenticado();
+    const usuario = this.currentUserSubject.value;
+    return usuario?.role === 'admin';
   }
 
   // ============================================
@@ -202,7 +203,6 @@ export class FirebaseService {
       const productosRef = collection(this.firestore, 'productos');
       const q = query(
         productosRef,
-        where('userId', '==', user.uid),
         orderBy('fecha', 'desc')
       );
       
@@ -226,7 +226,6 @@ export class FirebaseService {
 
       const docRef = await addDoc(collection(this.firestore, 'productos'), {
         ...producto,
-        userId: user.uid,
         createdAt: Timestamp.now()
       });
 
@@ -283,7 +282,7 @@ export class FirebaseService {
       }
 
       const categoriasRef = collection(this.firestore, 'categorias');
-      const q = query(categoriasRef, where('userId', '==', user.uid));
+      const q = query(categoriasRef);
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
@@ -314,7 +313,6 @@ export class FirebaseService {
     for (const cat of categoriasDefecto) {
       const docRef = await addDoc(collection(this.firestore, 'categorias'), {
         ...cat,
-        userId,
         createdAt: Timestamp.now()
       });
 
@@ -335,7 +333,6 @@ export class FirebaseService {
 
       const docRef = await addDoc(collection(this.firestore, 'categorias'), {
         ...categoria,
-        userId: user.uid,
         createdAt: Timestamp.now()
       });
 
@@ -396,7 +393,7 @@ export class FirebaseService {
           password: '',
           name: userData['name'],
           email: userData['email'],
-          role: 'user'
+          role: (userData['role'] as 'admin' | 'user') || 'user'
         };
       }
 
@@ -422,7 +419,7 @@ export class FirebaseService {
           password: '',
           name: nuevoUsuario.name,
           email: nuevoUsuario.email,
-          role: 'user'
+          role: (nuevoUsuario.role as 'admin' | 'user') || 'user'
         };
       }
 
