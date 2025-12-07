@@ -1,0 +1,46 @@
+<div class="reportes-container">
+  <div class="content-header">
+    <h1>📬 Buzón de Reportes</h1>
+    <div class="user-avatar">{{ iniciales }}</div>
+  </div>
+
+  <div class="reportes-content">
+    <div class="reportes-header">
+      <h2>Reportes Recibidos ({{ obtenerReportesFiltrados().length }})</h2>
+      <select 
+        class="select-filter"
+        [ngModel]="tipoSeleccionado()"
+        (ngModelChange)="tipoSeleccionado.set($event)"
+      >
+        <option value="">Todos los tipos</option>
+        <option value="error-stock">Error de Stock</option>
+        <option value="error-datos">Datos Incorrectos</option>
+        <option value="bug">Bug</option>
+        <option value="mejora">Mejora</option>
+        <option value="consulta">Consulta</option>
+        <option value="otro">Otro</option>
+      </select>
+    </div>
+
+    <div *ngIf="obtenerReportesFiltrados().length === 0" class="empty-state">
+      <p>📭 No hay reportes</p>
+    </div>
+
+    <div class="reportes-grid">
+      <div *ngFor="let reporte of obtenerReportesFiltrados()" class="reporte-card">
+        <div class="reporte-header">
+          <span class="reporte-icono">{{ obtenerIconoTipo(reporte.tipo) }}</span>
+          <span class="reporte-tipo">{{ obtenerTextoTipo(reporte.tipo) }}</span>
+          <button class="btn-delete" (click)="eliminarReporte(reporte.id)">🗑️</button>
+        </div>
+        <div class="reporte-body">
+          <p class="reporte-descripcion">{{ reporte.descripcion }}</p>
+        </div>
+        <div class="reporte-footer">
+          <span class="reporte-usuario">👤 {{ reporte.usuario }}</span>
+          <span class="reporte-fecha">{{ reporte.fecha | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
