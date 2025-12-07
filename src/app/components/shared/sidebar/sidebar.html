@@ -27,11 +27,26 @@
       <span>Categorías</span>
     </a>
 
-    <div class="nav-section-title">Soporte</div>
+    <div class="nav-section-title" *ngIf="usuarioActual">
+      {{ usuarioActual.role === 'admin' ? 'Administración' : 'Soporte' }}
+    </div>
+    
+    <a 
+      *ngIf="usuarioActual?.role === 'admin'"
+      class="nav-item" 
+      routerLink="/reportes" 
+      routerLinkActive="active"
+    >
+      <span>📬</span>
+      <span>Buzón de Reportes</span>
+    </a>
+    
     <button class="nav-item" (click)="abrirModalReporte()">
       <span>📋</span>
       <span>Reportar Problema</span>
     </button>
+
+
   </nav>
 
   <div class="sidebar-footer">
