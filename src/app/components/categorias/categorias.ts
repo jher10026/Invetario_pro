@@ -2,7 +2,7 @@
    COMPONENTE CATEGORÍAS - CORREGIDO
    Archivo: src/app/components/categorias/categorias.ts
    
-   ✅ Usa FirebaseService en lugar de AuthService
+   ✅ Usa métodos async para Firebase
    =================================== */
 
 import { Component, inject, signal } from '@angular/core';
@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { CategoriasService } from '../../services/categorias.service';
 import { ProductosService } from '../../services/productos.service';
 import { NotificationService } from '../../services/notification.service';
-import { FirebaseService } from '../../services/firebase.service'; // ⚠️ CAMBIO: Usar FirebaseService
+import { FirebaseService } from '../../services/firebase.service';
 import { Categoria } from '../../models/categoria.model';
 import { Usuario } from '../../models/usuario.model';
 
@@ -26,7 +26,7 @@ export class Categorias {
   private categoriasService = inject(CategoriasService);
   private productosService = inject(ProductosService);
   private notificationService = inject(NotificationService);
-  private firebaseService = inject(FirebaseService); // ⚠️ CAMBIO: Inyectar FirebaseService
+  private firebaseService = inject(FirebaseService);
 
   // Datos
   categorias = this.categoriasService.categorias;
@@ -37,6 +37,7 @@ export class Categorias {
   mostrarModal = signal(false);
   editandoCategoria = signal(false);
   categoriaSeleccionada = signal<Categoria | null>(null);
+  guardando = signal(false); // 🆕 Estado de guardando
 
   // Formulario
   formCategoria = signal({
@@ -52,7 +53,6 @@ export class Categorias {
    * Obtener usuario actual
    */
   private obtenerUsuarioActual(): void {
-    // ⚠️ CAMBIO: Usar firebaseService en lugar de authService
     this.usuarioActual = this.firebaseService.obtenerUsuarioActual() || null;
 
     if (this.usuarioActual) {
@@ -96,9 +96,9 @@ export class Categorias {
   }
 
   /**
-   * Guardar categoría
+   * Guardar categoría (ahora async para Firebase)
    */
-  guardarCategoria(): void {
+  async guardarCategoria(): Promise<void> {
     const form = this.formCategoria();
 
     // Validaciones
@@ -112,42 +112,59 @@ export class Categorias {
       return;
     }
 
-    if (this.editandoCategoria() && this.categoriaSeleccionada()) {
-      // Actualizar
-      const actualizado = this.categoriasService.actualizar(
-        this.categoriaSeleccionada()!.id,
-        {
+    // Mostrar estado de carga
+    this.guardando.set(true);
+
+    try {
+      if (this.editandoCategoria() && this.categoriaSeleccionada()) {
+        // 🔄 Actualizar en Firebase
+        const actualizado = await this.categoriasService.actualizar(
+          this.categoriaSeleccionada()!.id,
+          {
+            nombre: form.nombre,
+            color: form.color
+          }
+        );
+
+        if (actualizado) {
+          this.notificationService.exito('Categoría actualizada exitosamente');
+          this.cerrarModal();
+        } else {
+          this.notificationService.error('Error al actualizar la categoría');
+        }
+      } else {
+        // Verificar que no exista
+        if (this.categoriasService.existe(form.nombre)) {
+          this.notificationService.error('Esta categoría ya existe');
+          this.guardando.set(false);
+          return;
+        }
+
+        // 💾 Crear nueva en Firebase
+        const nuevaCategoria = await this.categoriasService.agregar({
           nombre: form.nombre,
           color: form.color
+        });
+
+        if (nuevaCategoria) {
+          this.notificationService.exito('Categoría creada exitosamente');
+          this.cerrarModal();
+        } else {
+          this.notificationService.error('Error al crear la categoría');
         }
-      );
-
-      if (actualizado) {
-        this.notificationService.exito('Categoría actualizada exitosamente');
       }
-    } else {
-      // Verificar que no exista
-      if (this.categoriasService.existe(form.nombre)) {
-        this.notificationService.error('Esta categoría ya existe');
-        return;
-      }
-
-      // Crear nueva
-      this.categoriasService.agregar({
-        nombre: form.nombre,
-        color: form.color
-      });
-
-      this.notificationService.exito('Categoría creada exitosamente');
+    } catch (error) {
+      console.error('❌ Error al guardar categoría:', error);
+      this.notificationService.error('Error al guardar la categoría');
+    } finally {
+      this.guardando.set(false);
     }
-
-    this.cerrarModal();
   }
 
   /**
-   * Eliminar categoría
+   * Eliminar categoría (ahora async para Firebase)
    */
-  eliminarCategoria(id: number, nombre: string): void {
+  async eliminarCategoria(id: number, nombre: string): Promise<void> {
     // Verificar si tiene productos
     const productos = this.productosService.filtrarPorCategoria(nombre);
 
@@ -159,10 +176,18 @@ export class Categorias {
     }
 
     if (confirm(`¿Estás seguro que deseas eliminar "${nombre}"?`)) {
-      const eliminado = this.categoriasService.eliminar(id);
+      try {
+        // 🗑️ Eliminar de Firebase
+        const eliminado = await this.categoriasService.eliminar(id);
 
-      if (eliminado) {
-        this.notificationService.exito('Categoría eliminada exitosamente');
+        if (eliminado) {
+          this.notificationService.exito('Categoría eliminada exitosamente');
+        } else {
+          this.notificationService.error('Error al eliminar la categoría');
+        }
+      } catch (error) {
+        console.error('❌ Error al eliminar categoría:', error);
+        this.notificationService.error('Error al eliminar la categoría');
       }
     }
   }
@@ -188,7 +213,6 @@ export class Categorias {
    * Es admin?
    */
   esAdmin(): boolean {
-    // ⚠️ CAMBIO: Usar firebaseService
     return this.firebaseService.esAdmin();
   }
 
