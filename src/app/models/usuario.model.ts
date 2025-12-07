@@ -10,5 +10,5 @@ export interface Usuario {
   password: string;
   name: string;
   email: string;
-  role: 'user'; // Ya no necesitamos 'admin', todos tienen permisos completos
+  role: 'admin' | 'user'; // Ya no necesitamos 'admin', todos tienen permisos completos
 }
