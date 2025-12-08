@@ -1,9 +1,10 @@
 <!-- ===================================
      TEMPLATE DEL COMPONENTE RAÍZ
      Archivo: src/app/app.html
+     ✅ Con clase condicional para centrar login
      =================================== -->
 
-<div class="app-wrapper">
+<div class="app-wrapper" [class.sin-sidebar]="!usuarioAutenticado$()">
   <!-- Mostrar sidebar solo si usuario está autenticado -->
   <app-sidebar *ngIf="usuarioAutenticado$()"></app-sidebar>
 
