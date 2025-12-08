@@ -1,12 +1,14 @@
 <!-- ===================================
-     TEMPLATE DE LOGIN - SIN ADMIN
+     LOGIN CON ANGULAR ANIMATIONS
      Archivo: src/app/components/login/login.html
-     
-     ✅ Sin código de administrador
+     ✅ Sin botón de cuenta de prueba
+     ✅ Con animaciones fluidas
      =================================== -->
 
 <div class="login-container">
-  <div class="login-card">
+  <!-- 🎬 Animación en la tarjeta principal -->
+  <div class="login-card" [@cardAnimation]>
+    
     <!-- Logo y título -->
     <div class="login-header">
       <div class="logo">📦</div>
@@ -14,24 +16,27 @@
       <p>{{ mostrarLogin() ? 'Inicia sesión en tu cuenta' : 'Crea tu cuenta' }}</p>
     </div>
 
-    <!-- Mensajes de error/éxito -->
+    <!-- 🎬 Mensajes con animación -->
     @if (mensajeError()) {
-      <div class="alert alert-error">
+      <div class="alert alert-error" [@alertAnimation]>
         ⚠️ {{ mensajeError() }}
       </div>
     }
 
     @if (mensajeExito()) {
-      <div class="alert alert-success">
+      <div class="alert alert-success" [@alertAnimation]>
         ✅ {{ mensajeExito() }}
       </div>
     }
 
-    <!-- FORMULARIO DE LOGIN -->
+    <!-- 🎬 FORMULARIO DE LOGIN con animación -->
     @if (mostrarLogin()) {
-      <form (ngSubmit)="handleLogin()" class="login-form">
+      <form (ngSubmit)="handleLogin()" class="login-form" [@formAnimation]>
         <div class="form-group">
-          <label for="loginEmail">Correo Electrónico</label>
+          <label for="loginEmail">
+            <span>Correo Electrónico</span>
+            <span class="icon">📧</span>
+          </label>
           <input
             type="email"
             id="loginEmail"
@@ -44,7 +49,10 @@
         </div>
 
         <div class="form-group">
-          <label for="loginPassword">Contraseña</label>
+          <label for="loginPassword">
+            <span>Contraseña</span>
+            <span class="icon">🔒</span>
+          </label>
           <input
             type="password"
             id="loginPassword"
@@ -56,29 +64,24 @@
           />
         </div>
 
+        <!-- 🎬 Botón con animación -->
         <button 
           type="submit" 
           class="btn btn-primary"
           [disabled]="cargando()"
+          [@buttonAnimation]
         >
           @if (cargando()) {
-            <span class="spinner"></span> Iniciando sesión...
+            <span class="spinner" [@spinnerAnimation]></span> 
+            <span>Iniciando sesión...</span>
           } @else {
-            Iniciar Sesión
+            <span>Iniciar Sesión</span>
+            <span class="arrow">→</span>
           }
-        </button>
-
-        <!-- Botón de prueba (útil para desarrollo) -->
-        <button 
-          type="button" 
-          class="btn btn-secondary"
-          (click)="loginPrueba()"
-          [disabled]="cargando()"
-        >
-          🧪 Usar cuenta de prueba
         </button>
       </form>
 
+      <!-- Footer del login -->
       <div class="login-footer">
         <p>
           ¿No tienes cuenta?
@@ -94,11 +97,14 @@
       </div>
     }
 
-    <!-- FORMULARIO DE REGISTRO -->
+    <!-- 🎬 FORMULARIO DE REGISTRO con animación -->
     @if (!mostrarLogin()) {
-      <form (ngSubmit)="handleRegistro()" class="login-form">
+      <form (ngSubmit)="handleRegistro()" class="login-form" [@formAnimation]>
         <div class="form-group">
-          <label for="registroName">Nombre Completo</label>
+          <label for="registroName">
+            <span>Nombre Completo</span>
+            <span class="icon">👤</span>
+          </label>
           <input
             type="text"
             id="registroName"
@@ -111,7 +117,10 @@
         </div>
 
         <div class="form-group">
-          <label for="registroEmail">Correo Electrónico</label>
+          <label for="registroEmail">
+            <span>Correo Electrónico</span>
+            <span class="icon">📧</span>
+          </label>
           <input
             type="email"
             id="registroEmail"
@@ -124,7 +133,10 @@
         </div>
 
         <div class="form-group">
-          <label for="registroPassword">Contraseña</label>
+          <label for="registroPassword">
+            <span>Contraseña</span>
+            <span class="icon">🔒</span>
+          </label>
           <input
             type="password"
             id="registroPassword"
@@ -137,7 +149,10 @@
         </div>
 
         <div class="form-group">
-          <label for="registroPasswordConfirm">Confirmar Contraseña</label>
+          <label for="registroPasswordConfirm">
+            <span>Confirmar Contraseña</span>
+            <span class="icon">🔐</span>
+          </label>
           <input
             type="password"
             id="registroPasswordConfirm"
@@ -149,19 +164,24 @@
           />
         </div>
 
+        <!-- 🎬 Botón con animación -->
         <button 
           type="submit" 
           class="btn btn-primary"
           [disabled]="cargando()"
+          [@buttonAnimation]
         >
           @if (cargando()) {
-            <span class="spinner"></span> Registrando...
+            <span class="spinner" [@spinnerAnimation]></span> 
+            <span>Registrando...</span>
           } @else {
-            Crear Cuenta
+            <span>Crear Cuenta</span>
+            <span class="arrow">→</span>
           }
         </button>
       </form>
 
+      <!-- Footer del registro -->
       <div class="login-footer">
         <p>
           ¿Ya tienes cuenta?
