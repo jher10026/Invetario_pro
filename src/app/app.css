@@ -9,6 +9,18 @@
   overflow: hidden;
 }
 
+/* ✅ Cuando NO hay sidebar (en login), usar display block */
+.app-wrapper.sin-sidebar {
+  display: block;
+}
+
+.app-wrapper.sin-sidebar .main-content {
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
 .main-content {
   flex: 1;
   overflow-y: auto;
