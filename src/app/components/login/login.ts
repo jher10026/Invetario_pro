@@ -13,13 +13,109 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FirebaseService } from '../../services/firebase.service';
 import { Subscription } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
+import { trigger, state, style, transition, animate, keyframes } from '@angular/animations';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrl: './login.css',
+
+  animations: [
+    // Animación para la tarjeta del login
+    trigger('cardAnimation', [
+      transition(':enter', [
+        style({ 
+          opacity: 0, 
+          transform: 'translateY(-50px) scale(0.9)' 
+        }),
+        animate('600ms cubic-bezier(0.34, 1.56, 0.64, 1)', 
+          style({ 
+            opacity: 1, 
+            transform: 'translateY(0) scale(1)' 
+          })
+        )
+      ])
+    ]),
+
+    // Animación para los formularios (entrada y salida)
+    trigger('formAnimation', [
+      transition(':enter', [
+        style({ 
+          opacity: 0, 
+          transform: 'translateX(-30px)' 
+        }),
+        animate('400ms 200ms cubic-bezier(0.4, 0, 0.2, 1)', 
+          style({ 
+            opacity: 1, 
+            transform: 'translateX(0)' 
+          })
+        )
+      ]),
+      transition(':leave', [
+        animate('300ms cubic-bezier(0.4, 0, 0.2, 1)', 
+          style({ 
+            opacity: 0, 
+            transform: 'translateX(30px)' 
+          })
+        )
+      ])
+    ]),
+
+    // Animación para alertas (mensajes de error/éxito)
+    trigger('alertAnimation', [
+      transition(':enter', [
+        animate('400ms cubic-bezier(0.34, 1.56, 0.64, 1)', keyframes([
+          style({ opacity: 0, transform: 'translateY(-20px) scale(0.9)', offset: 0 }),
+          style({ opacity: 1, transform: 'translateY(5px) scale(1.02)', offset: 0.7 }),
+          style({ opacity: 1, transform: 'translateY(0) scale(1)', offset: 1 })
+        ]))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-out', 
+          style({ 
+            opacity: 0, 
+            transform: 'translateY(-10px) scale(0.95)' 
+          })
+        )
+      ])
+    ]),
+
+    // Animación del spinner de carga
+    trigger('spinnerAnimation', [
+      transition(':enter', [
+        style({ 
+          opacity: 0, 
+          transform: 'scale(0)' 
+        }),
+        animate('300ms cubic-bezier(0.34, 1.56, 0.64, 1)', 
+          style({ 
+            opacity: 1, 
+            transform: 'scale(1)' 
+          })
+        )
+      ])
+    ]),
+
+    // Animación para los botones
+    trigger('buttonAnimation', [
+      transition(':enter', [
+        style({ 
+          opacity: 0, 
+          transform: 'translateY(20px)' 
+        }),
+        animate('400ms 300ms cubic-bezier(0.4, 0, 0.2, 1)', 
+          style({ 
+            opacity: 1, 
+            transform: 'translateY(0)' 
+          })
+        )
+      ])
+    ])
+  ]
+
+
 })
 export class Login implements OnInit, OnDestroy {
   private firebaseService = inject(FirebaseService);
@@ -118,11 +214,6 @@ export class Login implements OnInit, OnDestroy {
   /**
    * Login con cuenta de prueba
    */
-  loginPrueba(): void {
-    this.loginEmail.set('prueba@inventario.com');
-    this.loginPassword.set('prueba123');
-    this.handleLogin();
-  }
 
   /**
    * Procesar registro
