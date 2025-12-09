@@ -24,6 +24,9 @@ export class Reportes {
   iniciales = '';
 
   tipoSeleccionado = signal('');
+  // Modal de confirmación para eliminar
+  mostrarModalEliminar = signal(false);
+  reporteAEliminar = signal<number | null>(null);
 
   constructor() {
     this.obtenerUsuarioActual();
@@ -48,13 +51,38 @@ export class Reportes {
     return this.reportesService.filtrarPorTipo(tipo);
   }
 
+/**
+   * Mostrar modal de confirmación para eliminar
+   */
   eliminarReporte(id: number): void {
-    if (confirm('¿Eliminar este reporte?')) {
-      const eliminado = this.reportesService.eliminar(id);
-      if (eliminado) {
-        this.notificationService.exito('Reporte eliminado');
-      }
+    this.reporteAEliminar.set(id);
+    this.mostrarModalEliminar.set(true);
+  }
+
+  /**
+   * Confirmar eliminación del reporte
+   */
+  confirmarEliminacion(): void {
+    const id = this.reporteAEliminar();
+    if (id === null) return;
+
+    const eliminado = this.reportesService.eliminar(id);
+    
+    if (eliminado) {
+      this.notificationService.exito('Reporte eliminado exitosamente');
+      this.mostrarModalEliminar.set(false);
+      this.reporteAEliminar.set(null);
+    } else {
+      this.notificationService.error('Error al eliminar el reporte');
     }
+  }
+
+  /**
+   * Cancelar eliminación
+   */
+  cancelarEliminacion(): void {
+    this.mostrarModalEliminar.set(false);
+    this.reporteAEliminar.set(null);
   }
 
   obtenerIconoTipo(tipo: string): string {
