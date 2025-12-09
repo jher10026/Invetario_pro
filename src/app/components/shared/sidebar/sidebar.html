@@ -101,3 +101,34 @@
     </div>
   </div>
 </div>
+<!-- MODAL DE CONFIRMACIÓN CERRAR SESIÓN -->
+<div *ngIf="mostrarModalLogout()" class="modal-overlay" (click)="cancelarLogout()">
+  <div class="modal-confirm" (click)="$event.stopPropagation()">
+    <div class="modal-confirm-icon">
+      <span class="icon-warning">👋</span>
+    </div>
+    
+    <div class="modal-confirm-content">
+      <h2>¿Cerrar Sesión?</h2>
+      <p>
+        ¿Estás seguro que deseas cerrar sesión?
+      </p>
+      <p class="warning-text">Deberás iniciar sesión nuevamente para acceder.</p>
+    </div>
+
+    <div class="modal-confirm-actions">
+      <button 
+        class="btn-cancel-confirm" 
+        (click)="cancelarLogout()"
+      >
+        Cancelar
+      </button>
+      <button 
+        class="btn-logout-confirm" 
+        (click)="confirmarLogout()"
+      >
+        🚪 Cerrar Sesión
+      </button>
+    </div>
+  </div>
+</div>

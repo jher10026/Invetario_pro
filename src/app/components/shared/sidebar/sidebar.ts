@@ -29,6 +29,8 @@ export class Sidebar implements OnInit {
 
   usuarioActual: Usuario | null = null;
   mostrarModalReporte = signal(false);
+  // Modal de confirmación para cerrar sesión
+  mostrarModalLogout = signal(false);
 
   // Formulario de reporte
   formReporte = signal({
@@ -46,17 +48,33 @@ export class Sidebar implements OnInit {
   /**
    * Cerrar sesión con Firebase
    */
-  async logout(): Promise<void> {
-    if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
-      console.log('👋 Cerrando sesión...');
-      
-      await this.firebaseService.logout();
-      
-      // Redirigir a login
-      this.router.navigate(['/login']);
-      
-      console.log('✅ Sesión cerrada');
-    }
+/**
+   * Mostrar modal de confirmación para cerrar sesión
+   */
+  logout(): void {
+    this.mostrarModalLogout.set(true);
+  }
+
+  /**
+   * Confirmar cierre de sesión con Firebase
+   */
+  async confirmarLogout(): Promise<void> {
+    console.log('👋 Cerrando sesión...');
+    
+    await this.firebaseService.logout();
+    
+    // Redirigir a login
+    this.router.navigate(['/login']);
+    
+    this.mostrarModalLogout.set(false);
+    console.log('✅ Sesión cerrada');
+  }
+
+  /**
+   * Cancelar cierre de sesión
+   */
+  cancelarLogout(): void {
+    this.mostrarModalLogout.set(false);
   }
 
   abrirModalReporte(): void {
