@@ -140,6 +140,10 @@ export class Login implements OnInit, OnDestroy {
   // Mensajes
   mensajeError = signal('');
   mensajeExito = signal('');
+  // Control de visibilidad de contraseñas
+  mostrarPasswordLogin = signal(false);
+  mostrarPasswordRegistro = signal(false);
+  mostrarPasswordConfirm = signal(false);
 
   // URL de retorno
   private returnUrl: string = '/dashboard';
@@ -307,5 +311,19 @@ export class Login implements OnInit, OnDestroy {
     this.registroEmail.set('');
     this.registroPassword.set('');
     this.registroPasswordConfirm.set('');
+  }
+  /**
+   * Alternar visibilidad de contraseña
+   */
+  togglePasswordLogin(): void {
+    this.mostrarPasswordLogin.update(val => !val);
+  }
+
+  togglePasswordRegistro(): void {
+    this.mostrarPasswordRegistro.update(val => !val);
+  }
+
+  togglePasswordConfirm(): void {
+    this.mostrarPasswordConfirm.update(val => !val);
   }
 }

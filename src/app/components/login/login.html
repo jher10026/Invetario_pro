@@ -53,15 +53,26 @@
             <span>Contraseña</span>
             <span class="icon">🔒</span>
           </label>
-          <input
-            type="password"
-            id="loginPassword"
-            [(ngModel)]="loginPassword"
-            name="loginPassword"
-            placeholder="••••••••"
-            [disabled]="cargando()"
-            required
-          />
+          <div class="password-input-wrapper">
+            <input
+              [type]="mostrarPasswordLogin() ? 'text' : 'password'"
+              id="loginPassword"
+              [(ngModel)]="loginPassword"
+              name="loginPassword"
+              placeholder="••••••••"
+              [disabled]="cargando()"
+              required
+            />
+            <button 
+              type="button" 
+              class="toggle-password"
+              (click)="togglePasswordLogin()"
+              [disabled]="cargando()"
+              tabindex="-1"
+            >
+              {{ mostrarPasswordLogin() ? '🙈' : '👁️' }}
+            </button>
+          </div>
         </div>
 
         <!-- 🎬 Botón con animación -->
@@ -137,15 +148,26 @@
             <span>Contraseña</span>
             <span class="icon">🔒</span>
           </label>
-          <input
-            type="password"
-            id="registroPassword"
-            [(ngModel)]="registroPassword"
-            name="registroPassword"
-            placeholder="Mínimo 6 caracteres"
-            [disabled]="cargando()"
-            required
-          />
+          <div class="password-input-wrapper">
+            <input
+              [type]="mostrarPasswordRegistro() ? 'text' : 'password'"
+              id="registroPassword"
+              [(ngModel)]="registroPassword"
+              name="registroPassword"
+              placeholder="Mínimo 6 caracteres"
+              [disabled]="cargando()"
+              required
+            />
+            <button 
+              type="button" 
+              class="toggle-password"
+              (click)="togglePasswordRegistro()"
+              [disabled]="cargando()"
+              tabindex="-1"
+            >
+              {{ mostrarPasswordRegistro() ? '🙈' : '👁️' }}
+            </button>
+          </div>
         </div>
 
         <div class="form-group">
@@ -153,15 +175,26 @@
             <span>Confirmar Contraseña</span>
             <span class="icon">🔐</span>
           </label>
-          <input
-            type="password"
-            id="registroPasswordConfirm"
-            [(ngModel)]="registroPasswordConfirm"
-            name="registroPasswordConfirm"
-            placeholder="Repite tu contraseña"
-            [disabled]="cargando()"
-            required
-          />
+          <div class="password-input-wrapper">
+            <input
+              [type]="mostrarPasswordConfirm() ? 'text' : 'password'"
+              id="registroPasswordConfirm"
+              [(ngModel)]="registroPasswordConfirm"
+              name="registroPasswordConfirm"
+              placeholder="Repite tu contraseña"
+              [disabled]="cargando()"
+              required
+            />
+            <button 
+              type="button" 
+              class="toggle-password"
+              (click)="togglePasswordConfirm()"
+              [disabled]="cargando()"
+              tabindex="-1"
+            >
+              {{ mostrarPasswordConfirm() ? '🙈' : '👁️' }}
+            </button>
+          </div>
         </div>
 
         <!-- 🎬 Botón con animación -->
