@@ -44,6 +44,9 @@ export class Categorias {
     nombre: '',
     color: '#6366f1'
   });
+  // Modal de confirmación para eliminar
+  mostrarModalEliminar = signal(false);
+  categoriaAEliminar = signal<{ id: number; nombre: string } | null>(null);
 
   constructor() {
     this.obtenerUsuarioActual();
@@ -164,7 +167,10 @@ export class Categorias {
   /**
    * Eliminar categoría (ahora async para Firebase)
    */
-  async eliminarCategoria(id: number, nombre: string): Promise<void> {
+/**
+   * Mostrar modal de confirmación para eliminar
+   */
+  eliminarCategoria(id: number, nombre: string): void {
     // Verificar si tiene productos
     const productos = this.productosService.filtrarPorCategoria(nombre);
 
@@ -175,21 +181,43 @@ export class Categorias {
       return;
     }
 
-    if (confirm(`¿Estás seguro que deseas eliminar "${nombre}"?`)) {
-      try {
-        // 🗑️ Eliminar de Firebase
-        const eliminado = await this.categoriasService.eliminar(id);
+    this.categoriaAEliminar.set({ id, nombre });
+    this.mostrarModalEliminar.set(true);
+  }
 
-        if (eliminado) {
-          this.notificationService.exito('Categoría eliminada exitosamente');
-        } else {
-          this.notificationService.error('Error al eliminar la categoría');
-        }
-      } catch (error) {
-        console.error('❌ Error al eliminar categoría:', error);
+  /**
+   * Confirmar eliminación de categoría (ASYNC)
+   */
+  async confirmarEliminacion(): Promise<void> {
+    const categoria = this.categoriaAEliminar();
+    if (!categoria) return;
+
+    this.guardando.set(true);
+
+    try {
+      const eliminado = await this.categoriasService.eliminar(categoria.id);
+
+      if (eliminado) {
+        this.notificationService.exito('Categoría eliminada exitosamente');
+        this.mostrarModalEliminar.set(false);
+        this.categoriaAEliminar.set(null);
+      } else {
         this.notificationService.error('Error al eliminar la categoría');
       }
+    } catch (error) {
+      console.error('Error al eliminar categoría:', error);
+      this.notificationService.error('Error inesperado al eliminar');
+    } finally {
+      this.guardando.set(false);
     }
+  }
+
+  /**
+   * Cancelar eliminación
+   */
+  cancelarEliminacion(): void {
+    this.mostrarModalEliminar.set(false);
+    this.categoriaAEliminar.set(null);
   }
 
   /**
