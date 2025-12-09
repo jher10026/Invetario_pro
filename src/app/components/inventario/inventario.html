@@ -249,3 +249,41 @@
     </div>
   </div>
 </div>
+<!-- MODAL DE CONFIRMACIÓN ELIMINAR -->
+<div *ngIf="mostrarModalEliminar()" class="modal-overlay" (click)="cancelarEliminacion()">
+  <div class="modal-confirm" (click)="$event.stopPropagation()">
+    <div class="modal-confirm-icon">
+      <span class="icon-warning">⚠️</span>
+    </div>
+    
+    <div class="modal-confirm-content">
+      <h2>¿Eliminar Producto?</h2>
+      <p>
+        ¿Estás seguro que deseas eliminar 
+        <strong>"{{ productoAEliminar()?.nombre }}"</strong>?
+      </p>
+      <p class="warning-text">Esta acción no se puede deshacer.</p>
+    </div>
+
+    <div class="modal-confirm-actions">
+      <button 
+        class="btn-cancel-confirm" 
+        (click)="cancelarEliminacion()"
+        [disabled]="guardando()"
+      >
+        Cancelar
+      </button>
+      <button 
+        class="btn-delete-confirm" 
+        (click)="confirmarEliminacion()"
+        [disabled]="guardando()"
+      >
+        @if (guardando()) {
+          <span class="spinner"></span> Eliminando...
+        } @else {
+          🗑️ Eliminar
+        }
+      </button>
+    </div>
+  </div>
+</div>

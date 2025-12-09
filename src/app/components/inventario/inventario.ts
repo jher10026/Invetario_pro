@@ -57,6 +57,9 @@ export class Inventario {
     precio: 0,
     stock: 0
   });
+  // Modal de confirmación para eliminar
+  mostrarModalEliminar = signal(false);
+  productoAEliminar = signal<{ id: number; nombre: string } | null>(null);
 
   // Computed para productos filtrados
   productosFiltrados = computed(() => {
@@ -236,18 +239,30 @@ export class Inventario {
   /**
    * Eliminar producto (ASYNC)
    */
-  async eliminarProducto(id: number, nombre: string): Promise<void> {
-    if (!confirm(`¿Estás seguro que deseas eliminar "${nombre}"?`)) {
-      return;
-    }
+/**
+   * Mostrar modal de confirmación para eliminar
+   */
+  eliminarProducto(id: number, nombre: string): void {
+    this.productoAEliminar.set({ id, nombre });
+    this.mostrarModalEliminar.set(true);
+  }
+
+  /**
+   * Confirmar eliminación del producto (ASYNC)
+   */
+  async confirmarEliminacion(): Promise<void> {
+    const producto = this.productoAEliminar();
+    if (!producto) return;
 
     this.guardando.set(true);
 
     try {
-      const eliminado = await this.productosService.eliminar(id);
+      const eliminado = await this.productosService.eliminar(producto.id);
       
       if (eliminado) {
         this.notificationService.exito('Producto eliminado exitosamente');
+        this.mostrarModalEliminar.set(false);
+        this.productoAEliminar.set(null);
       } else {
         this.notificationService.error('Error al eliminar el producto');
       }
@@ -257,6 +272,14 @@ export class Inventario {
     } finally {
       this.guardando.set(false);
     }
+  }
+
+  /**
+   * Cancelar eliminación
+   */
+  cancelarEliminacion(): void {
+    this.mostrarModalEliminar.set(false);
+    this.productoAEliminar.set(null);
   }
 
   /**
