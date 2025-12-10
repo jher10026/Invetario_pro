@@ -487,7 +487,7 @@
 /* Responsive para tablets */
 @media (max-width: 1024px) {
   .charts-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; 
     gap: 1rem;
   }
   
