@@ -62,6 +62,7 @@ body {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -153,11 +154,13 @@ body {
     transform: translateX(400px);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
   }
 }
+
 /* ===================================
    LAYOUT PRINCIPAL - AGREGAR A styles.css
    =================================== */
@@ -173,9 +176,9 @@ app-root {
   app-root {
     display: flex;
   }
-  
-  /* El contenido principal tiene margen izquierdo */
-  app-root > *:not(app-sidebar) {
+
+  /* El contenido principal tiene margen izquierdo (excepto sidebar y loading screen) */
+  app-root>*:not(app-sidebar):not(.global-loading-screen) {
     margin-left: 16rem;
     flex: 1;
     min-height: 100vh;
@@ -183,13 +186,13 @@ app-root {
 }
 
 @media (min-width: 1440px) {
-  app-root > *:not(app-sidebar) {
+  app-root>*:not(app-sidebar):not(.global-loading-screen) {
     margin-left: 18rem;
   }
 }
 
 @media (max-width: 1023px) and (min-width: 769px) {
-  app-root > *:not(app-sidebar) {
+  app-root>*:not(app-sidebar):not(.global-loading-screen) {
     margin-left: 14rem;
   }
 }
@@ -200,10 +203,16 @@ app-root {
     display: flex;
     flex-direction: column;
   }
-  
+
   /* El contenido simplemente fluye después del sidebar */
-  app-root > *:not(app-sidebar) {
+  app-root>*:not(app-sidebar):not(.global-loading-screen) {
     margin-left: 0;
     flex: 1;
   }
+}
+
+/* Loading screen - siempre a pantalla completa sin márgenes */
+.global-loading-screen {
+  margin-left: 0 !important;
+  margin: 0 !important;
 }

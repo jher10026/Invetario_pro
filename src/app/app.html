@@ -2,17 +2,46 @@
      TEMPLATE DEL COMPONENTE RAÍZ
      Archivo: src/app/app.html
      ✅ Con clase condicional para centrar login
+     ✅ Loading screen global mientras cargan datos
      =================================== -->
 
-<div class="app-wrapper" [class.sin-sidebar]="!usuarioAutenticado$()">
-  <!-- Mostrar sidebar solo si usuario está autenticado -->
-  <app-sidebar *ngIf="usuarioAutenticado$()"></app-sidebar>
+<!-- 🆕 Loading Screen Global - Se muestra después del login mientras cargan los datos -->
+@if (mostrarLoadingGlobal()) {
+  <div class="global-loading-screen">
+    <div class="loading-content">
+      <div class="loading-logo">
+        <span class="logo-icon">📦</span>
+        <span class="logo-text">InventarioPro</span>
+      </div>
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+      </div>
+      <p class="loading-text">Cargando tu inventario...</p>
+      <div class="loading-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </div>
+}
 
-  <!-- Contenido principal -->
-  <main class="main-content">
-    <router-outlet></router-outlet>
-  </main>
+<!-- Layout principal - Solo se muestra cuando layoutListo() o no está autenticado -->
+@if (!mostrarLoadingGlobal()) {
+  <div class="app-wrapper" [class.sin-sidebar]="!usuarioAutenticado$()">
+    <!-- Mostrar sidebar solo si el layout está listo -->
+    @if (layoutListo()) {
+      <app-sidebar></app-sidebar>
+    }
 
-  <!-- Componente de notificaciones (siempre visible) -->
-  <app-toast></app-toast>
-</div>
+    <!-- Contenido principal -->
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+
+    <!-- Componente de notificaciones (siempre visible) -->
+    <app-toast></app-toast>
+  </div>
+}
