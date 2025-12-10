@@ -62,7 +62,7 @@ ng version      # Debe ser >= 20.x
 ### 1. Clonar el Repositorio
 
 ```bash
-git clone https://github.com/TU_USUARIO/inventario-pro1.git
+git clone https://github.com/jher10026/Invetario_pro.git
 cd inventario-pro1
 ```
 
@@ -76,7 +76,7 @@ npm install
 
 #### a) Crear proyecto en Firebase Console
 
-1. Ve a [Firebase Console](https://console.firebase.google.com/)
+1. Ve a https://console.firebase.google.com/u/0/project/inventario-productos-c366d/overview?hl=es-419
 2. Crea un nuevo proyecto
 3. Habilita **Authentication** (Email/Password)
 4. Crea una base de datos **Firestore** (modo producción)
@@ -553,7 +553,7 @@ git commit -m "docs: Actualizar README con instrucciones de instalación"
 ## 🤝 Colaboradores
 
 - **Docente**: ivansoriasolis (GitHub)
-- **Desarrollador**: [TU NOMBRE]
+- **Desarrollador**: Jhermy Hitsuko Yupanqui Aquise
 
 ---
 
@@ -577,8 +577,8 @@ Si encuentras algún error o tienes sugerencias:
 ## 📞 Contacto
 
 Para consultas sobre el proyecto:
-- **GitHub**: [TU_USUARIO](https://github.com/TU_USUARIO)
-- **Email**: [TU_EMAIL]
+- **GitHub**: https://github.com/jher10026/Invetario_pro.git
+- **Email**: 1002620232@unajma.edu.pe
 
 ---
 
