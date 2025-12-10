@@ -29,18 +29,13 @@
     <div class="nav-section-title" *ngIf="usuarioActual">
       {{ usuarioActual.role === 'admin' ? 'Administración' : 'Soporte' }}
     </div>
-    
-    <a 
-      *ngIf="usuarioActual?.role === 'admin'"
-      class="nav-item" 
-      routerLink="/reportes" 
-      routerLinkActive="active"
-    >
+
+    <a *ngIf="usuarioActual?.role === 'admin'" class="nav-item" routerLink="/reportes" routerLinkActive="active">
       <span>📬</span>
       <span>Buzón de Reportes</span>
     </a>
-    
-    <button class="nav-item" (click)="abrirModalReporte()">
+
+    <button *ngIf="usuarioActual?.role !== 'admin'" class="nav-item" (click)="abrirModalReporte()">
       <span>📋</span>
       <span>Reportar Problema</span>
     </button>
@@ -67,11 +62,7 @@
     <div class="modal-body">
       <div class="form-group">
         <label>Tipo de Problema</label>
-        <select 
-          class="form-input" 
-          [ngModel]="formReporte().tipo"
-          (ngModelChange)="actualizarForm('tipo', $event)"
-        >
+        <select class="form-input" [ngModel]="formReporte().tipo" (ngModelChange)="actualizarForm('tipo', $event)">
           <option value="">Selecciona un tipo...</option>
           <option value="error-stock">Error de Stock</option>
           <option value="error-datos">Datos Incorrectos</option>
@@ -84,14 +75,10 @@
 
       <div class="form-group">
         <label>Descripción</label>
-        <textarea
-          class="form-input"
-          [ngModel]="formReporte().descripcion"
-          (ngModelChange)="actualizarForm('descripcion', $event)"
-          rows="5"
+        <textarea class="form-input" [ngModel]="formReporte().descripcion"
+          (ngModelChange)="actualizarForm('descripcion', $event)" rows="5"
           placeholder="Por favor, describe el problema en detalle..."
-          style="resize: vertical; min-height: 120px;"
-        ></textarea>
+          style="resize: vertical; min-height: 120px;"></textarea>
       </div>
     </div>
 
@@ -107,7 +94,7 @@
     <div class="modal-confirm-icon">
       <span class="icon-warning">👋</span>
     </div>
-    
+
     <div class="modal-confirm-content">
       <h2>¿Cerrar Sesión?</h2>
       <p>
@@ -117,16 +104,10 @@
     </div>
 
     <div class="modal-confirm-actions">
-      <button 
-        class="btn-cancel-confirm" 
-        (click)="cancelarLogout()"
-      >
+      <button class="btn-cancel-confirm" (click)="cancelarLogout()">
         Cancelar
       </button>
-      <button 
-        class="btn-logout-confirm" 
-        (click)="confirmarLogout()"
-      >
+      <button class="btn-logout-confirm" (click)="confirmarLogout()">
         🚪 Cerrar Sesión
       </button>
     </div>
