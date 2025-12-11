@@ -1,8 +1,9 @@
 /* ===================================
-   RUTAS DE LA APLICACIÓN - CORREGIDAS
+   RUTAS - VERSIÓN TEMPORAL
    Archivo: src/app/app.routes.ts
    
-   ✅ Usa authGuard (funcional) correctamente
+   ✅ Lazy loading en Reportes
+   ⏸️ Detalle y 404 comentados hasta crear componentes
    =================================== */
 
 import { Routes } from '@angular/router';
@@ -10,9 +11,8 @@ import { Login } from './components/login/login';
 import { Dashboard } from './components/dashboard/dashboard';
 import { Inventario } from './components/inventario/inventario';
 import { Categorias } from './components/categorias/categorias';
-import { authGuard } from './guards/auth.guard'; // ⚠️ Importa authGuard (funcional)
+import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
-import { Reportes } from './components/reportes/reportes';
 
 export const routes: Routes = [
   // Ruta de login (sin protección)
@@ -25,13 +25,7 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     component: Dashboard,
-    canActivate: [authGuard] // ⚠️ usa authGuard (minúscula)
-  },
-
-  {
-    path: 'reportes',
-    component: Reportes,
-    canActivate: [authGuard, roleGuard]
+    canActivate: [authGuard]
   },
 
   {
@@ -40,10 +34,28 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
 
+  // ⏸️ COMENTADO TEMPORALMENTE - Descomentar cuando crees el componente
+  /*
+  {
+    path: 'inventario/:id',
+    loadComponent: () => import('./components/inventario/detalle-producto/detalle-producto')
+      .then(m => m.DetalleProducto),
+    canActivate: [authGuard]
+  },
+  */
+
   {
     path: 'categorias',
     component: Categorias,
     canActivate: [authGuard]
+  },
+
+  // ✅ LAZY LOADING - Reportes
+  {
+    path: 'reportes',
+    loadComponent: () => import('./components/reportes/reportes')
+      .then(m => m.Reportes),
+    canActivate: [authGuard, roleGuard]
   },
 
   // Ruta por defecto
@@ -53,9 +65,18 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
 
-  // Ruta para URLs no encontradas
+  // ⏸️ COMENTADO TEMPORALMENTE - Descomentar cuando crees el componente
+  /*
+  {
+    path: 'not-found',
+    loadComponent: () => import('./components/not-found/not-found')
+      .then(m => m.NotFound)
+  },
+  */
+
+  // Ruta para URLs no encontradas (temporal)
   {
     path: '**',
-    redirectTo: '/dashboard'
+    redirectTo: '/dashboard'  // ⚠️ Cambiar a '/not-found' después
   }
 ];

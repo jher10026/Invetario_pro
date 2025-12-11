@@ -1,8 +1,8 @@
 <!-- ===================================
-     TEMPLATE DEL INVENTARIO - SIN ADMIN
+     TEMPLATE CON FORMULARIO REACTIVO
      Archivo: src/app/components/inventario/inventario.html
      
-     ✅ Todos pueden crear/editar/eliminar
+     ✅ CAMBIOS PARA REACTIVE FORMS
      =================================== -->
 
 <div class="inventario-container">
@@ -151,7 +151,7 @@
   </div>
 </div>
 
-<!-- MODAL -->
+<!-- ✅ MODAL CON FORMULARIO REACTIVO -->
 <div *ngIf="mostrarModal()" class="modal-overlay" (click)="cerrarModal()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -159,96 +159,125 @@
       <button class="close-btn" (click)="cerrarModal()">×</button>
     </div>
 
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Nombre</label>
-        <input
-          type="text"
-          class="form-input"
-          [ngModel]="formProducto().nombre"
-          (ngModelChange)="actualizarForm('nombre', $event)"
-          placeholder="Ej: Laptop"
-          [disabled]="guardando()"
-        />
+    <!-- ✅ FORMULARIO REACTIVO -->
+    <form [formGroup]="productoForm" (ngSubmit)="guardarProducto()">
+      <div class="modal-body">
+        <!-- Nombre -->
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input
+            type="text"
+            class="form-input"
+            formControlName="nombre"
+            placeholder="Ej: Laptop Dell XPS"
+            [class.error]="hasError('nombre', 'required') || hasError('nombre', 'minlength')"
+          />
+          <span class="error-message" *ngIf="hasError('nombre', 'required')">
+            ⚠️ El nombre es requerido
+          </span>
+          <span class="error-message" *ngIf="hasError('nombre', 'minlength')">
+            ⚠️ Mínimo 3 caracteres
+          </span>
+        </div>
+
+        <!-- Fecha -->
+        <div class="form-group">
+          <label>Fecha de Ingreso *</label>
+          <input
+            type="date"
+            class="form-input"
+            formControlName="fecha"
+            [class.error]="hasError('fecha', 'required')"
+          />
+          <span class="error-message" *ngIf="hasError('fecha', 'required')">
+            ⚠️ La fecha es requerida
+          </span>
+        </div>
+
+        <!-- Categoría -->
+        <div class="form-group">
+          <label>Categoría *</label>
+          <select 
+            class="form-input" 
+            formControlName="categoria"
+            [class.error]="hasError('categoria', 'required')"
+          >
+            <option value="">Seleccionar categoría</option>
+            <option *ngFor="let cat of categorias()" [value]="cat.nombre">
+              {{ cat.nombre }}
+            </option>
+          </select>
+          <span class="error-message" *ngIf="hasError('categoria', 'required')">
+            ⚠️ Debes seleccionar una categoría
+          </span>
+        </div>
+
+        <!-- Precio y Stock -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Precio (S/) *</label>
+            <input
+              type="number"
+              class="form-input"
+              formControlName="precio"
+              step="0.01"
+              min="0"
+              placeholder="0.00"
+              [class.error]="hasError('precio', 'required') || hasError('precio', 'min')"
+            />
+            <span class="error-message" *ngIf="hasError('precio', 'required')">
+              ⚠️ El precio es requerido
+            </span>
+            <span class="error-message" *ngIf="hasError('precio', 'min')">
+              ⚠️ El precio debe ser mayor a 0
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Stock *</label>
+            <input
+              type="number"
+              class="form-input"
+              formControlName="stock"
+              min="0"
+              placeholder="0"
+              [class.error]="hasError('stock', 'required') || hasError('stock', 'min')"
+            />
+            <span class="error-message" *ngIf="hasError('stock', 'required')">
+              ⚠️ El stock es requerido
+            </span>
+            <span class="error-message" *ngIf="hasError('stock', 'min')">
+              ⚠️ El stock no puede ser negativo
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>Fecha de Ingreso</label>
-        <input
-          type="date"
-          class="form-input"
-          [ngModel]="formProducto().fecha"
-          (ngModelChange)="actualizarForm('fecha', $event)"
-          [disabled]="guardando()"
-        />
-      </div>
-
-      <div class="form-group">
-        <label>Categoría</label>
-        <select 
-          class="form-input" 
-          [ngModel]="formProducto().categoria"
-          (ngModelChange)="actualizarForm('categoria', $event)"
+      <div class="modal-actions">
+        <button 
+          type="button"
+          class="btn-cancel" 
+          (click)="cerrarModal()"
           [disabled]="guardando()"
         >
-          <option value="">Seleccionar categoría</option>
-          <option *ngFor="let cat of categorias()" [value]="cat.nombre">
-            {{ cat.nombre }}
-          </option>
-        </select>
+          Cancelar
+        </button>
+        <button 
+          type="submit"
+          class="btn-save" 
+          [disabled]="guardando() || productoForm.invalid"
+        >
+          @if (guardando()) {
+            <span class="spinner"></span> Guardando...
+          } @else {
+            Guardar
+          }
+        </button>
       </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label>Precio</label>
-          <input
-            type="number"
-            class="form-input"
-            [ngModel]="formProducto().precio"
-            (ngModelChange)="actualizarForm('precio', +$event)"
-            step="0.01"
-            min="0"
-            placeholder="0.00"
-            [disabled]="guardando()"
-          />
-        </div>
-        <div class="form-group">
-          <label>Stock</label>
-          <input
-            type="number"
-            class="form-input"
-            [ngModel]="formProducto().stock"
-            (ngModelChange)="actualizarForm('stock', +$event)"
-            min="0"
-            placeholder="0"
-            [disabled]="guardando()"
-          />
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-actions">
-      <button 
-        class="btn-cancel" 
-        (click)="cerrarModal()"
-        [disabled]="guardando()"
-      >
-        Cancelar
-      </button>
-      <button 
-        class="btn-save" 
-        (click)="guardarProducto()"
-        [disabled]="guardando()"
-      >
-        @if (guardando()) {
-          <span class="spinner"></span> Guardando...
-        } @else {
-          Guardar
-        }
-      </button>
-    </div>
+    </form>
   </div>
 </div>
+
 <!-- MODAL DE CONFIRMACIÓN ELIMINAR -->
 <div *ngIf="mostrarModalEliminar()" class="modal-overlay" (click)="cancelarEliminacion()">
   <div class="modal-confirm" (click)="$event.stopPropagation()">
@@ -287,3 +316,24 @@
     </div>
   </div>
 </div>
+
+<style>
+/* Estilos para errores de validación */
+.form-input.error {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2;
+}
+
+.error-message {
+  display: block;
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+.btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+</style>

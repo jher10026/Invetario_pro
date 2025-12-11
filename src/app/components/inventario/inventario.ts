@@ -1,13 +1,14 @@
 /* ===================================
-   COMPONENTE INVENTARIO - SIN ADMIN
+   COMPONENTE INVENTARIO - IMPORTS CORREGIDOS
    Archivo: src/app/components/inventario/inventario.ts
    
-   ✅ Todos los usuarios pueden crear/editar/eliminar
+   ✅ Importa AMBOS: ReactiveFormsModule Y FormsModule
    =================================== */
 
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms'; // ✅ Para los filtros (ngModel)
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms'; // ✅ Para el formulario del modal
 import { ProductosService } from '../../services/productos.service';
 import { CategoriasService } from '../../services/categorias.service';
 import { NotificationService } from '../../services/notification.service';
@@ -18,7 +19,11 @@ import { Usuario } from '../../models/usuario.model';
 @Component({
   selector: 'app-inventario',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule,           // ✅ Para filtros con [(ngModel)]
+    ReactiveFormsModule    // ✅ Para formulario reactivo del modal
+  ],
   templateUrl: './inventario.html',
   styleUrl: './inventario.css'
 })
@@ -27,6 +32,7 @@ export class Inventario {
   private categoriasService = inject(CategoriasService);
   private notificationService = inject(NotificationService);
   private firebaseService = inject(FirebaseService);
+  private fb = inject(FormBuilder);
 
   // Datos
   productos = this.productosService.productos;
@@ -38,7 +44,7 @@ export class Inventario {
   // Estados de guardado
   guardando = signal(false);
 
-  // Filtros
+  // Filtros (estos usan ngModel del FormsModule)
   searchTerm = signal('');
   categoriaSeleccionada = signal('');
   estadoSeleccionado = signal('');
@@ -48,24 +54,16 @@ export class Inventario {
   mostrarModal = signal(false);
   editandoProducto = signal(false);
   productoSeleccionado = signal<Producto | null>(null);
-
-  // Formulario
-  formProducto = signal({
-    nombre: '',
-    fecha: new Date().toISOString().split('T')[0],
-    categoria: '',
-    precio: 0,
-    stock: 0
-  });
-  // Modal de confirmación para eliminar
   mostrarModalEliminar = signal(false);
   productoAEliminar = signal<{ id: number; nombre: string } | null>(null);
+
+  // ✅ FORMULARIO REACTIVO (usa ReactiveFormsModule)
+  productoForm!: FormGroup;
 
   // Computed para productos filtrados
   productosFiltrados = computed(() => {
     let resultado = [...this.productos()];
 
-    // Filtrar por búsqueda
     const searchTerm = this.searchTerm().toLowerCase();
     if (searchTerm) {
       resultado = resultado.filter(p => 
@@ -73,13 +71,11 @@ export class Inventario {
       );
     }
 
-    // Filtrar por categoría
     const categoriaSeleccionada = this.categoriaSeleccionada();
     if (categoriaSeleccionada) {
       resultado = resultado.filter(p => p.categoria === categoriaSeleccionada);
     }
 
-    // Filtrar por estado
     const estadoSeleccionado = this.estadoSeleccionado();
     if (estadoSeleccionado) {
       resultado = resultado.filter(p => 
@@ -87,7 +83,6 @@ export class Inventario {
       );
     }
 
-    // Ordenar
     const ordenamiento = this.ordenamiento();
     switch (ordenamiento) {
       case 'recent':
@@ -109,6 +104,80 @@ export class Inventario {
 
   constructor() {
     this.obtenerUsuarioActual();
+    this.inicializarFormulario();
+  }
+
+  /**
+   * ✅ INICIALIZAR FORMULARIO REACTIVO CON VALIDACIONES
+   */
+  private inicializarFormulario(): void {
+    this.productoForm = this.fb.group({
+      nombre: ['', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(50)
+      ]],
+      fecha: [new Date().toISOString().split('T')[0], [
+        Validators.required
+      ]],
+      categoria: ['', [
+        Validators.required
+      ]],
+      precio: [0, [
+        Validators.required,
+        Validators.min(0.01),
+        Validators.max(999999)
+      ]],
+      stock: [0, [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(999999)
+      ]]
+    });
+  }
+
+  /**
+   * ✅ GETTER PARA ACCEDER A LOS CONTROLES
+   */
+  get f() {
+    return this.productoForm.controls;
+  }
+
+  /**
+   * ✅ VERIFICAR SI UN CONTROL TIENE UN ERROR ESPECÍFICO
+   */
+  hasError(controlName: string, errorType: string): boolean {
+    const control = this.productoForm.get(controlName);
+    return !!(control?.hasError(errorType) && control?.touched);
+  }
+
+  /**
+   * ✅ OBTENER MENSAJE DE ERROR PERSONALIZADO
+   */
+  getErrorMessage(controlName: string): string {
+    const control = this.productoForm.get(controlName);
+    
+    if (!control || !control.errors || !control.touched) {
+      return '';
+    }
+
+    if (control.hasError('required')) {
+      return 'Este campo es requerido';
+    }
+    if (control.hasError('minlength')) {
+      return `Mínimo ${control.errors['minlength'].requiredLength} caracteres`;
+    }
+    if (control.hasError('maxlength')) {
+      return `Máximo ${control.errors['maxlength'].requiredLength} caracteres`;
+    }
+    if (control.hasError('min')) {
+      return `El valor mínimo es ${control.errors['min'].min}`;
+    }
+    if (control.hasError('max')) {
+      return `El valor máximo es ${control.errors['max'].max}`;
+    }
+    
+    return '';
   }
 
   /**
@@ -134,7 +203,13 @@ export class Inventario {
   abrirModalNuevo(): void {
     this.editandoProducto.set(false);
     this.productoSeleccionado.set(null);
-    this.limpiarFormulario();
+    this.productoForm.reset({
+      nombre: '',
+      fecha: new Date().toISOString().split('T')[0],
+      categoria: '',
+      precio: 0,
+      stock: 0
+    });
     this.mostrarModal.set(true);
   }
 
@@ -144,7 +219,7 @@ export class Inventario {
   abrirModalEditar(producto: Producto): void {
     this.editandoProducto.set(true);
     this.productoSeleccionado.set(producto);
-    this.formProducto.set({
+    this.productoForm.patchValue({
       nombre: producto.nombre,
       fecha: producto.fecha,
       categoria: producto.categoria,
@@ -159,50 +234,34 @@ export class Inventario {
    */
   cerrarModal(): void {
     this.mostrarModal.set(false);
-    this.limpiarFormulario();
+    this.productoForm.reset();
   }
 
   /**
-   * Guardar producto (ASYNC)
+   * ✅ GUARDAR PRODUCTO CON VALIDACIÓN DEL FORMULARIO
    */
   async guardarProducto(): Promise<void> {
-    const form = this.formProducto();
+    // Marcar todos los campos como touched para mostrar errores
+    Object.keys(this.productoForm.controls).forEach(key => {
+      this.productoForm.get(key)?.markAsTouched();
+    });
 
-    // Validaciones
-    if (!form.nombre.trim()) {
-      this.notificationService.error('El nombre del producto es requerido');
-      return;
-    }
-
-    if (!form.categoria) {
-      this.notificationService.error('Debes seleccionar una categoría');
-      return;
-    }
-
-    if (form.precio <= 0) {
-      this.notificationService.error('El precio debe ser mayor a 0');
-      return;
-    }
-
-    if (form.stock < 0) {
-      this.notificationService.error('El stock no puede ser negativo');
+    // Validar formulario
+    if (this.productoForm.invalid) {
+      this.notificationService.error('Por favor completa todos los campos correctamente');
       return;
     }
 
     this.guardando.set(true);
 
     try {
+      const formData = this.productoForm.value;
+
       if (this.editandoProducto() && this.productoSeleccionado()) {
         // Actualizar
         const actualizado = await this.productosService.actualizar(
           this.productoSeleccionado()!.id,
-          {
-            nombre: form.nombre,
-            fecha: form.fecha,
-            categoria: form.categoria,
-            precio: form.precio,
-            stock: form.stock
-          }
+          formData
         );
 
         if (actualizado) {
@@ -213,13 +272,7 @@ export class Inventario {
         }
       } else {
         // Crear nuevo
-        const nuevoProducto = await this.productosService.agregar({
-          nombre: form.nombre,
-          fecha: form.fecha,
-          categoria: form.categoria,
-          precio: form.precio,
-          stock: form.stock
-        });
+        const nuevoProducto = await this.productosService.agregar(formData);
 
         if (nuevoProducto) {
           this.notificationService.exito('Producto agregado exitosamente');
@@ -237,9 +290,6 @@ export class Inventario {
   }
 
   /**
-   * Eliminar producto (ASYNC)
-   */
-/**
    * Mostrar modal de confirmación para eliminar
    */
   eliminarProducto(id: number, nombre: string): void {
@@ -248,7 +298,7 @@ export class Inventario {
   }
 
   /**
-   * Confirmar eliminación del producto (ASYNC)
+   * Confirmar eliminación del producto
    */
   async confirmarEliminacion(): Promise<void> {
     const producto = this.productoAEliminar();
@@ -312,27 +362,5 @@ export class Inventario {
       default:
         return '';
     }
-  }
-
-  /**
-   * Limpiar formulario
-   */
-  private limpiarFormulario(): void {
-    this.formProducto.set({
-      nombre: '',
-      fecha: new Date().toISOString().split('T')[0],
-      categoria: '',
-      precio: 0,
-      stock: 0
-    });
-  }
-
-  /**
-   * Actualizar formulario
-   */
-  actualizarForm(campo: string, valor: any): void {
-    const form = this.formProducto();
-    (form as any)[campo] = valor;
-    this.formProducto.set({...form});
   }
 }
