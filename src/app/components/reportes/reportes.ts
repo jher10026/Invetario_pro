@@ -6,11 +6,12 @@ import { NotificationService } from '../../services/notification.service';
 import { FirebaseService } from '../../services/firebase.service';
 import { Reporte } from '../../models/reporte.model';
 import { Usuario } from '../../models/usuario.model';
+import { AvatarModal } from '../shared/avatar-modal/avatar-modal';
 
 @Component({
   selector: 'app-reportes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AvatarModal],
   templateUrl: './reportes.html',
   styleUrl: './reportes.css'
 })
@@ -27,6 +28,9 @@ export class Reportes {
   // Modal de confirmación para eliminar
   mostrarModalEliminar = signal(false);
   reporteAEliminar = signal<number | null>(null);
+
+  // Modal de avatar
+  mostrarModalAvatar = signal(false);
 
   constructor() {
     this.obtenerUsuarioActual();
@@ -45,15 +49,36 @@ export class Reportes {
     });
   }
 
+  /**
+   * Abrir modal de avatar
+   */
+  abrirModalAvatar(): void {
+    this.mostrarModalAvatar.set(true);
+  }
+
+  /**
+   * Cerrar modal de avatar
+   */
+  cerrarModalAvatar(): void {
+    this.mostrarModalAvatar.set(false);
+  }
+
+  /**
+   * Manejar foto actualizada
+   */
+  onFotoActualizada(url: string | null): void {
+    console.log('📸 Foto actualizada:', url);
+  }
+
   obtenerReportesFiltrados(): Reporte[] {
     const tipo = this.tipoSeleccionado();
     if (!tipo) return this.reportes();
     return this.reportesService.filtrarPorTipo(tipo);
   }
 
-/**
-   * Mostrar modal de confirmación para eliminar
-   */
+  /**
+     * Mostrar modal de confirmación para eliminar
+     */
   eliminarReporte(id: number): void {
     this.reporteAEliminar.set(id);
     this.mostrarModalEliminar.set(true);
@@ -67,7 +92,7 @@ export class Reportes {
     if (id === null) return;
 
     const eliminado = this.reportesService.eliminar(id);
-    
+
     if (eliminado) {
       this.notificationService.exito('Reporte eliminado exitosamente');
       this.mostrarModalEliminar.set(false);

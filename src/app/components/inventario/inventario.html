@@ -9,60 +9,46 @@
   <!-- Header -->
   <div class="content-header">
     <h1>Inventario</h1>
-    <div class="user-avatar">{{ iniciales }}</div>
+    <div class="user-avatar" (click)="abrirModalAvatar()" title="Cambiar foto de perfil">
+      @if (usuarioActual?.photoURL) {
+      <img [src]="usuarioActual!.photoURL" alt="Foto de perfil" class="avatar-image" />
+      } @else {
+      {{ iniciales }}
+      }
+    </div>
   </div>
 
   <!-- Tabla de productos -->
   <div class="table-container">
     <div class="table-header">
       <h2>📋 Lista de Productos</h2>
-      <button
-        *ngIf="usuarioActual?.role === 'admin'"
-        class="btn btn-primary"
-        (click)="abrirModalNuevo()"
-        [disabled]="guardando()"
-      >
+      <button *ngIf="usuarioActual?.role === 'admin'" class="btn btn-primary" (click)="abrirModalNuevo()"
+        [disabled]="guardando()">
         ➕ Nuevo
       </button>
     </div>
 
     <!-- Filtros -->
     <div class="filters">
-      <input
-        type="text"
-        class="search-input"
-        [ngModel]="searchTerm()"
-        (ngModelChange)="searchTerm.set($event)"
-        placeholder="🔍 Buscar producto..."
-      />
-      
-      <select
-        class="select-input"
-        [ngModel]="categoriaSeleccionada()"
-        (ngModelChange)="categoriaSeleccionada.set($event)"
-      >
+      <input type="text" class="search-input" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+        placeholder="🔍 Buscar producto..." />
+
+      <select class="select-input" [ngModel]="categoriaSeleccionada()"
+        (ngModelChange)="categoriaSeleccionada.set($event)">
         <option value="">Todas las Categorías</option>
         <option *ngFor="let cat of categorias()" [value]="cat.nombre">
           {{ cat.nombre }}
         </option>
       </select>
 
-      <select
-        class="select-input"
-        [ngModel]="estadoSeleccionado()"
-        (ngModelChange)="estadoSeleccionado.set($event)"
-      >
+      <select class="select-input" [ngModel]="estadoSeleccionado()" (ngModelChange)="estadoSeleccionado.set($event)">
         <option value="">Todos los Estados</option>
         <option value="disponible">En Stock</option>
         <option value="bajo">Stock Bajo</option>
         <option value="agotado">Agotado</option>
       </select>
 
-      <select
-        class="select-input"
-        [ngModel]="ordenamiento()"
-        (ngModelChange)="ordenamiento.set($event)"
-      >
+      <select class="select-input" [ngModel]="ordenamiento()" (ngModelChange)="ordenamiento.set($event)">
         <option value="recent">Más Recientes</option>
         <option value="oldest">Más Antiguos</option>
         <option value="name">Por Nombre</option>
@@ -103,10 +89,8 @@
               </span>
             </td>
             <td>
-              <span
-                class="badge"
-                [style]="'background: ' + obtenerColorCategoria(producto.categoria) + '20; color: ' + obtenerColorCategoria(producto.categoria) + '; border: 1px solid ' + obtenerColorCategoria(producto.categoria) + '40;'"
-              >
+              <span class="badge"
+                [style]="'background: ' + obtenerColorCategoria(producto.categoria) + '20; color: ' + obtenerColorCategoria(producto.categoria) + '; border: 1px solid ' + obtenerColorCategoria(producto.categoria) + '40;'">
                 {{ producto.categoria }}
               </span>
             </td>
@@ -117,22 +101,12 @@
               </span>
             </td>
             <td class="actions">
-              <button
-                *ngIf="usuarioActual?.role === 'admin'"
-                class="btn-icon edit"
-                (click)="abrirModalEditar(producto)"
-                [disabled]="guardando()"
-                title="Editar"
-              >
+              <button *ngIf="usuarioActual?.role === 'admin'" class="btn-icon edit" (click)="abrirModalEditar(producto)"
+                [disabled]="guardando()" title="Editar">
                 ✏️
               </button>
-              <button
-                *ngIf="usuarioActual?.role === 'admin'"
-                class="btn-icon delete"
-                (click)="eliminarProducto(producto.id, producto.nombre)"
-                [disabled]="guardando()"
-                title="Eliminar"
-              >
+              <button *ngIf="usuarioActual?.role === 'admin'" class="btn-icon delete"
+                (click)="eliminarProducto(producto.id, producto.nombre)" [disabled]="guardando()" title="Eliminar">
                 🗑️
               </button>
               <span *ngIf="usuarioActual?.role !== 'admin'" class="solo-lectura">
@@ -165,13 +139,8 @@
         <!-- Nombre -->
         <div class="form-group">
           <label>Nombre *</label>
-          <input
-            type="text"
-            class="form-input"
-            formControlName="nombre"
-            placeholder="Ej: Laptop Dell XPS"
-            [class.error]="hasError('nombre', 'required') || hasError('nombre', 'minlength')"
-          />
+          <input type="text" class="form-input" formControlName="nombre" placeholder="Ej: Laptop Dell XPS"
+            [class.error]="hasError('nombre', 'required') || hasError('nombre', 'minlength')" />
           <span class="error-message" *ngIf="hasError('nombre', 'required')">
             ⚠️ El nombre es requerido
           </span>
@@ -183,12 +152,7 @@
         <!-- Fecha -->
         <div class="form-group">
           <label>Fecha de Ingreso *</label>
-          <input
-            type="date"
-            class="form-input"
-            formControlName="fecha"
-            [class.error]="hasError('fecha', 'required')"
-          />
+          <input type="date" class="form-input" formControlName="fecha" [class.error]="hasError('fecha', 'required')" />
           <span class="error-message" *ngIf="hasError('fecha', 'required')">
             ⚠️ La fecha es requerida
           </span>
@@ -197,11 +161,7 @@
         <!-- Categoría -->
         <div class="form-group">
           <label>Categoría *</label>
-          <select 
-            class="form-input" 
-            formControlName="categoria"
-            [class.error]="hasError('categoria', 'required')"
-          >
+          <select class="form-input" formControlName="categoria" [class.error]="hasError('categoria', 'required')">
             <option value="">Seleccionar categoría</option>
             <option *ngFor="let cat of categorias()" [value]="cat.nombre">
               {{ cat.nombre }}
@@ -216,15 +176,8 @@
         <div class="form-row">
           <div class="form-group">
             <label>Precio (S/) *</label>
-            <input
-              type="number"
-              class="form-input"
-              formControlName="precio"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
-              [class.error]="hasError('precio', 'required') || hasError('precio', 'min')"
-            />
+            <input type="number" class="form-input" formControlName="precio" step="0.01" min="0" placeholder="0.00"
+              [class.error]="hasError('precio', 'required') || hasError('precio', 'min')" />
             <span class="error-message" *ngIf="hasError('precio', 'required')">
               ⚠️ El precio es requerido
             </span>
@@ -235,14 +188,8 @@
 
           <div class="form-group">
             <label>Stock *</label>
-            <input
-              type="number"
-              class="form-input"
-              formControlName="stock"
-              min="0"
-              placeholder="0"
-              [class.error]="hasError('stock', 'required') || hasError('stock', 'min')"
-            />
+            <input type="number" class="form-input" formControlName="stock" min="0" placeholder="0"
+              [class.error]="hasError('stock', 'required') || hasError('stock', 'min')" />
             <span class="error-message" *ngIf="hasError('stock', 'required')">
               ⚠️ El stock es requerido
             </span>
@@ -254,23 +201,14 @@
       </div>
 
       <div class="modal-actions">
-        <button 
-          type="button"
-          class="btn-cancel" 
-          (click)="cerrarModal()"
-          [disabled]="guardando()"
-        >
+        <button type="button" class="btn-cancel" (click)="cerrarModal()" [disabled]="guardando()">
           Cancelar
         </button>
-        <button 
-          type="submit"
-          class="btn-save" 
-          [disabled]="guardando() || productoForm.invalid"
-        >
+        <button type="submit" class="btn-save" [disabled]="guardando() || productoForm.invalid">
           @if (guardando()) {
-            <span class="spinner"></span> Guardando...
+          <span class="spinner"></span> Guardando...
           } @else {
-            Guardar
+          Guardar
           }
         </button>
       </div>
@@ -284,33 +222,25 @@
     <div class="modal-confirm-icon">
       <span class="icon-warning">⚠️</span>
     </div>
-    
+
     <div class="modal-confirm-content">
       <h2>¿Eliminar Producto?</h2>
       <p>
-        ¿Estás seguro que deseas eliminar 
+        ¿Estás seguro que deseas eliminar
         <strong>"{{ productoAEliminar()?.nombre }}"</strong>?
       </p>
       <p class="warning-text">Esta acción no se puede deshacer.</p>
     </div>
 
     <div class="modal-confirm-actions">
-      <button 
-        class="btn-cancel-confirm" 
-        (click)="cancelarEliminacion()"
-        [disabled]="guardando()"
-      >
+      <button class="btn-cancel-confirm" (click)="cancelarEliminacion()" [disabled]="guardando()">
         Cancelar
       </button>
-      <button 
-        class="btn-delete-confirm" 
-        (click)="confirmarEliminacion()"
-        [disabled]="guardando()"
-      >
+      <button class="btn-delete-confirm" (click)="confirmarEliminacion()" [disabled]="guardando()">
         @if (guardando()) {
-          <span class="spinner"></span> Eliminando...
+        <span class="spinner"></span> Eliminando...
         } @else {
-          🗑️ Eliminar
+        🗑️ Eliminar
         }
       </button>
     </div>
@@ -318,22 +248,26 @@
 </div>
 
 <style>
-/* Estilos para errores de validación */
-.form-input.error {
-  border-color: #ef4444 !important;
-  background-color: #fef2f2;
-}
+  /* Estilos para errores de validación */
+  .form-input.error {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2;
+  }
 
-.error-message {
-  display: block;
-  color: #ef4444;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-  font-weight: 500;
-}
+  .error-message {
+    display: block;
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+  }
 
-.btn-save:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+  .btn-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 </style>
+
+<!-- Modal de Avatar -->
+<app-avatar-modal [visible]="mostrarModalAvatar()" [currentPhotoURL]="usuarioActual?.photoURL" [iniciales]="iniciales"
+  (cerrar)="cerrarModalAvatar()" (fotoActualizada)="onFotoActualizada($event)"></app-avatar-modal>

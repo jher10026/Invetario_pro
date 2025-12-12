@@ -15,14 +15,16 @@ import { NotificationService } from '../../services/notification.service';
 import { FirebaseService } from '../../services/firebase.service';
 import { Producto, EstadoStock } from '../../models/producto.model';
 import { Usuario } from '../../models/usuario.model';
+import { AvatarModal } from '../shared/avatar-modal/avatar-modal';
 
 @Component({
   selector: 'app-inventario',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     FormsModule,           // ✅ Para filtros con [(ngModel)]
-    ReactiveFormsModule    // ✅ Para formulario reactivo del modal
+    ReactiveFormsModule,   // ✅ Para formulario reactivo del modal
+    AvatarModal            // ✅ Para modal de foto de perfil
   ],
   templateUrl: './inventario.html',
   styleUrl: './inventario.css'
@@ -57,6 +59,9 @@ export class Inventario {
   mostrarModalEliminar = signal(false);
   productoAEliminar = signal<{ id: number; nombre: string } | null>(null);
 
+  // Modal de avatar
+  mostrarModalAvatar = signal(false);
+
   // ✅ FORMULARIO REACTIVO (usa ReactiveFormsModule)
   productoForm!: FormGroup;
 
@@ -66,7 +71,7 @@ export class Inventario {
 
     const searchTerm = this.searchTerm().toLowerCase();
     if (searchTerm) {
-      resultado = resultado.filter(p => 
+      resultado = resultado.filter(p =>
         p.nombre.toLowerCase().includes(searchTerm)
       );
     }
@@ -78,7 +83,7 @@ export class Inventario {
 
     const estadoSeleccionado = this.estadoSeleccionado();
     if (estadoSeleccionado) {
-      resultado = resultado.filter(p => 
+      resultado = resultado.filter(p =>
         this.productosService.obtenerEstado(p.stock) === estadoSeleccionado
       );
     }
@@ -105,6 +110,27 @@ export class Inventario {
   constructor() {
     this.obtenerUsuarioActual();
     this.inicializarFormulario();
+  }
+
+  /**
+   * Abrir modal de avatar
+   */
+  abrirModalAvatar(): void {
+    this.mostrarModalAvatar.set(true);
+  }
+
+  /**
+   * Cerrar modal de avatar
+   */
+  cerrarModalAvatar(): void {
+    this.mostrarModalAvatar.set(false);
+  }
+
+  /**
+   * Manejar foto actualizada
+   */
+  onFotoActualizada(url: string | null): void {
+    console.log('📸 Foto actualizada:', url);
   }
 
   /**
@@ -156,7 +182,7 @@ export class Inventario {
    */
   getErrorMessage(controlName: string): string {
     const control = this.productoForm.get(controlName);
-    
+
     if (!control || !control.errors || !control.touched) {
       return '';
     }
@@ -176,7 +202,7 @@ export class Inventario {
     if (control.hasError('max')) {
       return `El valor máximo es ${control.errors['max'].max}`;
     }
-    
+
     return '';
   }
 
@@ -308,7 +334,7 @@ export class Inventario {
 
     try {
       const eliminado = await this.productosService.eliminar(producto.id);
-      
+
       if (eliminado) {
         this.notificationService.exito('Producto eliminado exitosamente');
         this.mostrarModalEliminar.set(false);

@@ -1,17 +1,19 @@
 <div class="reportes-container">
   <div class="content-header">
     <h1>📬 Buzón de Reportes</h1>
-    <div class="user-avatar">{{ iniciales }}</div>
+    <div class="user-avatar" (click)="abrirModalAvatar()" title="Cambiar foto de perfil">
+      @if (usuarioActual?.photoURL) {
+      <img [src]="usuarioActual!.photoURL" alt="Foto de perfil" class="avatar-image" />
+      } @else {
+      {{ iniciales }}
+      }
+    </div>
   </div>
 
   <div class="reportes-content">
     <div class="reportes-header">
       <h2>Reportes Recibidos ({{ obtenerReportesFiltrados().length }})</h2>
-      <select 
-        class="select-filter"
-        [ngModel]="tipoSeleccionado()"
-        (ngModelChange)="tipoSeleccionado.set($event)"
-      >
+      <select class="select-filter" [ngModel]="tipoSeleccionado()" (ngModelChange)="tipoSeleccionado.set($event)">
         <option value="">Todos los tipos</option>
         <option value="error-stock">Error de Stock</option>
         <option value="error-datos">Datos Incorrectos</option>
@@ -50,7 +52,7 @@
     <div class="modal-confirm-icon">
       <span class="icon-warning">⚠️</span>
     </div>
-    
+
     <div class="modal-confirm-content">
       <h2>¿Eliminar Reporte?</h2>
       <p>
@@ -60,18 +62,16 @@
     </div>
 
     <div class="modal-confirm-actions">
-      <button 
-        class="btn-cancel-confirm" 
-        (click)="cancelarEliminacion()"
-      >
+      <button class="btn-cancel-confirm" (click)="cancelarEliminacion()">
         Cancelar
       </button>
-      <button 
-        class="btn-delete-confirm" 
-        (click)="confirmarEliminacion()"
-      >
+      <button class="btn-delete-confirm" (click)="confirmarEliminacion()">
         🗑️ Eliminar
       </button>
     </div>
   </div>
 </div>
+
+<!-- Modal de Avatar -->
+<app-avatar-modal [visible]="mostrarModalAvatar()" [currentPhotoURL]="usuarioActual?.photoURL" [iniciales]="iniciales"
+  (cerrar)="cerrarModalAvatar()" (fotoActualizada)="onFotoActualizada($event)"></app-avatar-modal>

@@ -7,7 +7,13 @@
   <!-- Header -->
   <div class="content-header">
     <h1>Categorías</h1>
-    <div class="user-avatar">{{ iniciales }}</div>
+    <div class="user-avatar" (click)="abrirModalAvatar()" title="Cambiar foto de perfil">
+      @if (usuarioActual?.photoURL) {
+      <img [src]="usuarioActual!.photoURL" alt="Foto de perfil" class="avatar-image" />
+      } @else {
+      {{ iniciales }}
+      }
+    </div>
   </div>
 
   <!-- Grid de categorías -->
@@ -16,10 +22,7 @@
       <p>No hay categorías aún</p>
     </div>
 
-    <div
-      *ngFor="let categoria of categorias()"
-      class="category-card"
-    >
+    <div *ngFor="let categoria of categorias()" class="category-card">
       <div class="category-header">
         <div class="category-color" [style.background]="categoria.color"></div>
         <div class="category-info">
@@ -29,18 +32,10 @@
       </div>
 
       <div *ngIf="esAdmin()" class="category-actions">
-        <button
-          class="btn-icon"
-          (click)="abrirModalEditar(categoria)"
-          title="Editar"
-        >
+        <button class="btn-icon" (click)="abrirModalEditar(categoria)" title="Editar">
           ✏️
         </button>
-        <button
-          class="btn-icon delete"
-          (click)="eliminarCategoria(categoria.id, categoria.nombre)"
-          title="Eliminar"
-        >
+        <button class="btn-icon delete" (click)="eliminarCategoria(categoria.id, categoria.nombre)" title="Eliminar">
           🗑️
         </button>
       </div>
@@ -48,12 +43,7 @@
   </div>
 
   <!-- Botón flotante -->
-  <button
-    *ngIf="esAdmin()"
-    class="add-btn"
-    (click)="abrirModalNuevo()"
-    title="Nueva Categoría"
-  >
+  <button *ngIf="esAdmin()" class="add-btn" (click)="abrirModalNuevo()" title="Nueva Categoría">
     +
   </button>
 </div>
@@ -69,33 +59,21 @@
     <div class="modal-body">
       <div class="form-group">
         <label>Nombre</label>
-        <input
-          type="text"
-          class="form-input"
-          [ngModel]="formCategoria().nombre"
-          (ngModelChange)="actualizarForm('nombre', $event)"
-          placeholder="Ej: Gaming"
-        />
+        <input type="text" class="form-input" [ngModel]="formCategoria().nombre"
+          (ngModelChange)="actualizarForm('nombre', $event)" placeholder="Ej: Gaming" />
       </div>
 
       <div class="form-group">
         <label>Color</label>
         <div class="color-picker-container">
-          <input
-            type="color"
-            class="color-input"
-            [ngModel]="formCategoria().color"
-            (ngModelChange)="actualizarForm('color', $event)"
-          />
+          <input type="color" class="color-input" [ngModel]="formCategoria().color"
+            (ngModelChange)="actualizarForm('color', $event)" />
           <span class="color-code">{{ formCategoria().color }}</span>
         </div>
       </div>
 
       <div class="color-preview">
-        <div
-          class="preview-box"
-          [style.background]="formCategoria().color"
-        ></div>
+        <div class="preview-box" [style.background]="formCategoria().color"></div>
         <span>Vista previa</span>
       </div>
     </div>
@@ -112,35 +90,31 @@
     <div class="modal-confirm-icon">
       <span class="icon-warning">⚠️</span>
     </div>
-    
+
     <div class="modal-confirm-content">
       <h2>¿Eliminar Categoría?</h2>
       <p>
-        ¿Estás seguro que deseas eliminar 
+        ¿Estás seguro que deseas eliminar
         <strong>"{{ categoriaAEliminar()?.nombre }}"</strong>?
       </p>
       <p class="warning-text">Esta acción no se puede deshacer.</p>
     </div>
 
     <div class="modal-confirm-actions">
-      <button 
-        class="btn-cancel-confirm" 
-        (click)="cancelarEliminacion()"
-        [disabled]="guardando()"
-      >
+      <button class="btn-cancel-confirm" (click)="cancelarEliminacion()" [disabled]="guardando()">
         Cancelar
       </button>
-      <button 
-        class="btn-delete-confirm" 
-        (click)="confirmarEliminacion()"
-        [disabled]="guardando()"
-      >
+      <button class="btn-delete-confirm" (click)="confirmarEliminacion()" [disabled]="guardando()">
         @if (guardando()) {
-          <span class="spinner"></span> Eliminando...
+        <span class="spinner"></span> Eliminando...
         } @else {
-          🗑️ Eliminar
+        🗑️ Eliminar
         }
       </button>
     </div>
   </div>
 </div>
+
+<!-- Modal de Avatar -->
+<app-avatar-modal [visible]="mostrarModalAvatar()" [currentPhotoURL]="usuarioActual?.photoURL" [iniciales]="iniciales"
+  (cerrar)="cerrarModalAvatar()" (fotoActualizada)="onFotoActualizada($event)"></app-avatar-modal>

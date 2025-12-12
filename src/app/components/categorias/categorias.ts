@@ -14,11 +14,12 @@ import { NotificationService } from '../../services/notification.service';
 import { FirebaseService } from '../../services/firebase.service';
 import { Categoria } from '../../models/categoria.model';
 import { Usuario } from '../../models/usuario.model';
+import { AvatarModal } from '../shared/avatar-modal/avatar-modal';
 
 @Component({
   selector: 'app-categorias',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AvatarModal],
   templateUrl: './categorias.html',
   styleUrl: './categorias.css'
 })
@@ -48,6 +49,9 @@ export class Categorias {
   mostrarModalEliminar = signal(false);
   categoriaAEliminar = signal<{ id: number; nombre: string } | null>(null);
 
+  // Modal de avatar
+  mostrarModalAvatar = signal(false);
+
   constructor() {
     this.obtenerUsuarioActual();
   }
@@ -56,15 +60,38 @@ export class Categorias {
    * Obtener usuario actual
    */
   private obtenerUsuarioActual(): void {
-    this.usuarioActual = this.firebaseService.obtenerUsuarioActual() || null;
+    this.firebaseService.currentUser$.subscribe(user => {
+      this.usuarioActual = user || null;
 
-    if (this.usuarioActual) {
-      this.iniciales = this.usuarioActual.name
-        .split(' ')
-        .map(n => n[0])
-        .join('')
-        .toUpperCase();
-    }
+      if (this.usuarioActual) {
+        this.iniciales = this.usuarioActual.name
+          .split(' ')
+          .map(n => n[0])
+          .join('')
+          .toUpperCase();
+      }
+    });
+  }
+
+  /**
+   * Abrir modal de avatar
+   */
+  abrirModalAvatar(): void {
+    this.mostrarModalAvatar.set(true);
+  }
+
+  /**
+   * Cerrar modal de avatar
+   */
+  cerrarModalAvatar(): void {
+    this.mostrarModalAvatar.set(false);
+  }
+
+  /**
+   * Manejar foto actualizada
+   */
+  onFotoActualizada(url: string | null): void {
+    console.log('📸 Foto actualizada:', url);
   }
 
   /**
@@ -167,9 +194,9 @@ export class Categorias {
   /**
    * Eliminar categoría (ahora async para Firebase)
    */
-/**
-   * Mostrar modal de confirmación para eliminar
-   */
+  /**
+     * Mostrar modal de confirmación para eliminar
+     */
   eliminarCategoria(id: number, nombre: string): void {
     // Verificar si tiene productos
     const productos = this.productosService.filtrarPorCategoria(nombre);
@@ -250,6 +277,6 @@ export class Categorias {
   actualizarForm(campo: string, valor: any): void {
     const form = this.formCategoria();
     (form as any)[campo] = valor;
-    this.formCategoria.set({...form});
+    this.formCategoria.set({ ...form });
   }
 }
