@@ -15,7 +15,7 @@
   bottom: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  background: linear-gradient(135deg, #0f0a1e 0%, #1a1333 50%, #0d1a2d 100%);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,7 +78,7 @@
 .logo-text {
   font-size: 2rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #a855f7, #6366f1, #3b82f6);
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -102,12 +102,12 @@
 }
 
 .spinner-ring:nth-child(1) {
-  border-top-color: #a855f7;
+  border-top-color: #3b82f6;
   animation-delay: 0s;
 }
 
 .spinner-ring:nth-child(2) {
-  border-right-color: #6366f1;
+  border-right-color: #2563eb;
   animation-delay: 0.15s;
   width: 70%;
   height: 70%;
@@ -116,7 +116,7 @@
 }
 
 .spinner-ring:nth-child(3) {
-  border-bottom-color: #3b82f6;
+  border-bottom-color: #1d4ed8;
   animation-delay: 0.3s;
   width: 40%;
   height: 40%;
@@ -152,7 +152,7 @@
 .loading-dots span {
   width: 8px;
   height: 8px;
-  background: linear-gradient(135deg, #a855f7, #6366f1);
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   border-radius: 50%;
   animation: dotPulse 1.4s ease-in-out infinite;
 }
