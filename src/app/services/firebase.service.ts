@@ -444,7 +444,8 @@ export class FirebaseService {
           password: '',
           name: userData['name'],
           email: userData['email'],
-          role: (userData['role'] as 'admin' | 'user') || 'user'
+          role: (userData['role'] as 'admin' | 'user') || 'user',
+          photoURL: userData['photoURL'] || undefined
         };
       }
 
@@ -457,7 +458,8 @@ export class FirebaseService {
           name: authUser.displayName || authUser.email?.split('@')[0] || 'Usuario',
           email: authUser.email || '',
           role: 'user',
-          createdAt: Timestamp.now()
+          createdAt: Timestamp.now(),
+          photoURL: authUser.photoURL || ''
         };
 
         const usuarioRef = doc(this.firestore, 'usuarios', authUser.uid);
@@ -470,7 +472,8 @@ export class FirebaseService {
           password: '',
           name: nuevoUsuario.name,
           email: nuevoUsuario.email,
-          role: (nuevoUsuario.role as 'admin' | 'user') || 'user'
+          role: (nuevoUsuario.role as 'admin' | 'user') || 'user',
+          photoURL: nuevoUsuario.photoURL || undefined
         };
       }
 
@@ -487,11 +490,82 @@ export class FirebaseService {
           password: '',
           name: authUser.displayName || authUser.email?.split('@')[0] || 'Usuario',
           email: authUser.email || '',
-          role: 'user'
+          role: 'user',
+          photoURL: authUser.photoURL || undefined
         };
       }
 
       return null;
+    }
+  }
+
+  // ============================================
+  //  FOTO DE PERFIL
+  // ============================================
+
+  /**
+   * Actualizar foto de perfil del usuario
+   */
+  async actualizarFotoPerfil(photoURL: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const user = this.auth.currentUser;
+      if (!user) {
+        return { success: false, message: 'No hay usuario autenticado' };
+      }
+
+      console.log('📸 Actualizando foto de perfil:', photoURL);
+
+      // Actualizar en Firestore
+      const usuarioRef = doc(this.firestore, 'usuarios', user.uid);
+      await updateDoc(usuarioRef, { photoURL });
+
+      // Actualizar el estado local
+      const currentUser = this.currentUserSubject.value;
+      if (currentUser) {
+        this.currentUserSubject.next({
+          ...currentUser,
+          photoURL
+        });
+      }
+
+      console.log('✅ Foto de perfil actualizada');
+      return { success: true, message: 'Foto actualizada correctamente' };
+
+    } catch (error: any) {
+      console.error('❌ Error al actualizar foto:', error);
+      return { success: false, message: error.message || 'Error al actualizar foto' };
+    }
+  }
+
+  /**
+   * Eliminar foto de perfil
+   */
+  async eliminarFotoPerfil(): Promise<{ success: boolean; message: string }> {
+    try {
+      const user = this.auth.currentUser;
+      if (!user) {
+        return { success: false, message: 'No hay usuario autenticado' };
+      }
+
+      console.log('🗑️ Eliminando foto de perfil');
+
+      const usuarioRef = doc(this.firestore, 'usuarios', user.uid);
+      await updateDoc(usuarioRef, { photoURL: '' });
+
+      const currentUser = this.currentUserSubject.value;
+      if (currentUser) {
+        this.currentUserSubject.next({
+          ...currentUser,
+          photoURL: undefined
+        });
+      }
+
+      console.log('✅ Foto de perfil eliminada');
+      return { success: true, message: 'Foto eliminada correctamente' };
+
+    } catch (error: any) {
+      console.error('❌ Error al eliminar foto:', error);
+      return { success: false, message: error.message || 'Error al eliminar foto' };
     }
   }
 

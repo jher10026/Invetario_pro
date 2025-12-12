@@ -1,5 +1,5 @@
 <!-- ===================================
-     DASHBOARD SIN CHART.JS
+     DASHBOARD CON FOTO DE PERFIL
      Archivo: src/app/components/dashboard/dashboard.component.html
      =================================== -->
 
@@ -7,7 +7,13 @@
   <!-- Header -->
   <div class="content-header">
     <h1>Dashboard</h1>
-    <div class="user-avatar">{{ iniciales }}</div>
+    <div class="user-avatar" (click)="abrirModalAvatar()" title="Cambiar foto de perfil">
+      @if (usuarioActual?.photoURL) {
+      <img [src]="usuarioActual!.photoURL" alt="Foto de perfil" class="avatar-image" />
+      } @else {
+      {{ iniciales }}
+      }
+    </div>
   </div>
 
   <!-- Mensaje de bienvenida -->
@@ -30,7 +36,7 @@
   </div>
 
   <!-- Gráficas -->
-<!-- Gráficas con Chart.js -->
+  <!-- Gráficas con Chart.js -->
   <div class="charts-grid" *ngIf="productos().length > 0; else sinProductos">
     <!-- Gráfica de barras -->
     <div class="chart-card">
@@ -63,11 +69,7 @@
           <div *ngFor="let dato of datosValorCategoria()" class="chart-bar">
             <div class="bar-label">{{ dato.nombre }}</div>
             <div class="bar-container">
-              <div 
-                class="bar" 
-                [style.width.%]="dato.porcentaje"
-                [style.background]="dato.color"
-              ></div>
+              <div class="bar" [style.width.%]="dato.porcentaje" [style.background]="dato.color"></div>
             </div>
             <div class="bar-value">S/ {{ dato.valor.toLocaleString('es-PE', {minimumFractionDigits: 2}) }}</div>
           </div>
@@ -132,3 +134,7 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de Avatar -->
+<app-avatar-modal [visible]="mostrarModalAvatar()" [currentPhotoURL]="usuarioActual?.photoURL" [iniciales]="iniciales"
+  (cerrar)="cerrarModalAvatar()" (fotoActualizada)="onFotoActualizada($event)"></app-avatar-modal>

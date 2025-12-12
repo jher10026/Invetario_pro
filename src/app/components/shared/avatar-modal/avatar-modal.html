@@ -1,0 +1,78 @@
+<!-- ===================================
+     AVATAR MODAL TEMPLATE
+     Archivo: src/app/components/shared/avatar-modal/avatar-modal.html
+     =================================== -->
+
+<div *ngIf="visible" class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>📷 Cambiar Foto de Perfil</h2>
+            <button class="close-btn" (click)="cerrarModal()">×</button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Preview actual o nueva -->
+            <div class="avatar-preview-container">
+                <div class="avatar-preview" [class.has-image]="previewURL() || currentPhotoURL">
+                    @if (previewURL()) {
+                    <img [src]="previewURL()" alt="Preview" class="preview-image" />
+                    } @else if (currentPhotoURL) {
+                    <img [src]="currentPhotoURL" alt="Foto actual" class="preview-image" />
+                    } @else {
+                    <span class="preview-iniciales">{{ iniciales }}</span>
+                    }
+                </div>
+
+                <div class="avatar-actions">
+                    <button class="btn-select" (click)="abrirSelector()" [disabled]="subiendo()">
+                        📁 Seleccionar Imagen
+                    </button>
+
+                    @if (currentPhotoURL && !previewURL()) {
+                    <button class="btn-delete" (click)="eliminarFoto()" [disabled]="subiendo()">
+                        🗑️ Eliminar Foto
+                    </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Input oculto -->
+            <input type="file" id="avatar-file-input" accept="image/*" (change)="onFileSelect($event)"
+                style="display: none;" />
+
+            <!-- Info del archivo seleccionado -->
+            @if (archivoSeleccionado()) {
+            <div class="file-info">
+                <span class="file-name">📄 {{ archivoSeleccionado()?.name }}</span>
+                <span class="file-size">{{ (archivoSeleccionado()!.size / 1024).toFixed(1) }} KB</span>
+            </div>
+            }
+
+            <!-- Error -->
+            @if (error()) {
+            <div class="error-message">
+                ⚠️ {{ error() }}
+            </div>
+            }
+
+            <!-- Instrucciones -->
+            <div class="instructions">
+                <p>📌 Formatos: JPG, PNG, GIF, WebP</p>
+                <p>📌 Tamaño máximo: 5MB</p>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" (click)="cerrarModal()" [disabled]="subiendo()">
+                Cancelar
+            </button>
+            <button class="btn-save" (click)="subirImagen()" [disabled]="subiendo() || !archivoSeleccionado()">
+                @if (subiendo()) {
+                <span class="spinner"></span> Subiendo...
+                } @else {
+                ✅ Guardar Foto
+                }
+            </button>
+        </div>
+    </div>
+</div>

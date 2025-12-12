@@ -1,8 +1,8 @@
 /* ===================================
-   MODELO DE USUARIO - SIMPLIFICADO
+   MODELO DE USUARIO - CON FOTO DE PERFIL
    Archivo: src/app/models/usuario.model.ts
    
-   ✅ Sin distinción de roles (todos son "admin")
+   ✅ Incluye photoURL para foto de perfil
    =================================== */
 
 export interface Usuario {
@@ -10,5 +10,6 @@ export interface Usuario {
   password: string;
   name: string;
   email: string;
-  role: 'admin' | 'user'; // Ya no necesitamos 'admin', todos tienen permisos completos
+  role: 'admin' | 'user';
+  photoURL?: string; // URL de la foto de perfil (ImgBB)
 }

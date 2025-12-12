@@ -1,0 +1,330 @@
+/* ===================================
+   ESTILOS AVATAR MODAL
+   Archivo: src/app/components/shared/avatar-modal/avatar-modal.css
+   =================================== */
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 1rem;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.modal {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow-xl), var(--shadow-glow);
+    border: 1px solid var(--glass-border);
+    animation: slideUp 0.3s ease;
+    overflow: hidden;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px) scale(0.98);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Header */
+.modal-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.close-btn {
+    background: rgba(100, 116, 139, 0.2);
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-smooth);
+    line-height: 1;
+}
+
+.close-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+}
+
+/* Body */
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Avatar Preview */
+.avatar-preview-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.avatar-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--gradient-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    overflow: hidden;
+    border: 4px solid var(--glass-border);
+    box-shadow: var(--shadow-glow);
+    transition: all var(--transition-smooth);
+}
+
+.avatar-preview.has-image {
+    background: transparent;
+}
+
+.preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-iniciales {
+    text-transform: uppercase;
+}
+
+/* Actions */
+.avatar-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btn-select,
+.btn-delete {
+    padding: 0.625rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all var(--transition-smooth);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-select {
+    background: var(--gradient-accent);
+    color: white;
+}
+
+.btn-select:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+}
+
+.btn-delete {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-delete:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+}
+
+.btn-select:disabled,
+.btn-delete:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* File Info */
+.file-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+}
+
+.file-name {
+    font-size: 0.875rem;
+    color: var(--success);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+}
+
+.file-size {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* Error */
+.error-message {
+    padding: 0.75rem 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius-md);
+    color: #f87171;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+/* Instructions */
+.instructions {
+    padding: 0.75rem 1rem;
+    background: rgba(100, 116, 139, 0.1);
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.instructions p {
+    margin: 0.25rem 0;
+}
+
+/* Modal Actions */
+.modal-actions {
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid var(--glass-border);
+    display: flex;
+    gap: 1rem;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.btn-cancel,
+.btn-save {
+    flex: 1;
+    padding: 0.875rem;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-smooth);
+    font-size: 0.9375rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-cancel {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+}
+
+.btn-cancel:hover:not(:disabled) {
+    background: var(--bg-secondary);
+}
+
+.btn-save {
+    background: var(--gradient-accent);
+    color: white;
+}
+
+.btn-save:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+}
+
+.btn-save:disabled,
+.btn-cancel:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Spinner */
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .modal {
+        max-width: 95%;
+        margin: 0.5rem;
+    }
+
+    .avatar-preview {
+        width: 100px;
+        height: 100px;
+        font-size: 2rem;
+    }
+
+    .modal-header h2 {
+        font-size: 1.125rem;
+    }
+
+    .avatar-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-select,
+    .btn-delete {
+        width: 100%;
+        justify-content: center;
+    }
+}

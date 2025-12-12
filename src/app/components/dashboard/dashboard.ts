@@ -3,9 +3,10 @@
    Archivo: src/app/components/dashboard/dashboard.ts
    
    ✅ Actualizado para Firestore
+   ✅ Con foto de perfil
    =================================== */
 
-import { Component, inject, computed, effect } from '@angular/core';
+import { Component, inject, computed, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FirebaseService } from '../../services/firebase.service';
 import { ProductosService } from '../../services/productos.service';
@@ -13,6 +14,7 @@ import { CategoriasService } from '../../services/categorias.service';
 import { Usuario } from '../../models/usuario.model';
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
+import { AvatarModal } from '../shared/avatar-modal/avatar-modal';
 
 Chart.register(...registerables);
 
@@ -26,13 +28,13 @@ export interface Estadistica {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AvatarModal],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
 export class Dashboard {
-@ViewChild('chartCategorias') chartCategorias!: ElementRef<HTMLCanvasElement>;
-@ViewChild('chartCircular') chartCircular!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('chartCategorias') chartCategorias!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('chartCircular') chartCircular!: ElementRef<HTMLCanvasElement>;
 
   private chartBarras?: Chart;
   private chartPie?: Chart;
@@ -42,6 +44,9 @@ export class Dashboard {
 
   usuarioActual: Usuario | null = null;
   iniciales = '';
+
+  // Modal de avatar
+  mostrarModalAvatar = signal(false);
 
   // Acceso a los datos desde los servicios
   productos = this.productosService.productos;
@@ -125,23 +130,23 @@ export class Dashboard {
     }));
   });
 
-constructor() {
-  this.obtenerUsuarioActual();
-  
-  // 🔄 Efecto para recrear gráficas cuando cambien los datos
-  effect(() => {
-    // Observar cambios en productos y categorías
-    const prods = this.productos();
-    const cats = this.categorias();
-    
-    // Recrear gráficas si hay datos y las vistas están listas
-    if (prods.length > 0 && cats.length > 0) {
-      setTimeout(() => {
-        this.crearGraficas();
-      }, 100);
-    }
-  });
-}
+  constructor() {
+    this.obtenerUsuarioActual();
+
+    // 🔄 Efecto para recrear gráficas cuando cambien los datos
+    effect(() => {
+      // Observar cambios en productos y categorías
+      const prods = this.productos();
+      const cats = this.categorias();
+
+      // Recrear gráficas si hay datos y las vistas están listas
+      if (prods.length > 0 && cats.length > 0) {
+        setTimeout(() => {
+          this.crearGraficas();
+        }, 100);
+      }
+    });
+  }
 
   /**
    * Obtener usuario actual
@@ -158,6 +163,28 @@ constructor() {
           .toUpperCase();
       }
     });
+  }
+
+  /**
+   * Abrir modal de avatar
+   */
+  abrirModalAvatar(): void {
+    this.mostrarModalAvatar.set(true);
+  }
+
+  /**
+   * Cerrar modal de avatar
+   */
+  cerrarModalAvatar(): void {
+    this.mostrarModalAvatar.set(false);
+  }
+
+  /**
+   * Manejar foto actualizada
+   */
+  onFotoActualizada(url: string | null): void {
+    console.log('📸 Foto actualizada:', url);
+    // El usuario se actualiza automáticamente via el BehaviorSubject en firebase.service
   }
 
   /**
@@ -196,173 +223,173 @@ constructor() {
    */
   obtenerColorCategoria(nombreCategoria: string): string {
     const categoria = this.categorias().find(c => c.nombre === nombreCategoria);
-    return categoria ? categoria.color : '#6366f1'; 
+    return categoria ? categoria.color : '#6366f1';
   }
   ngAfterViewInit(): void {
-  // Esperar un momento para que el DOM esté listo
-  setTimeout(() => {
-    this.crearGraficas();
-  }, 100);
-}
+    // Esperar un momento para que el DOM esté listo
+    setTimeout(() => {
+      this.crearGraficas();
+    }, 100);
+  }
 
-ngOnDestroy(): void {
-  this.chartBarras?.destroy();
-  this.chartPie?.destroy();
-}
+  ngOnDestroy(): void {
+    this.chartBarras?.destroy();
+    this.chartPie?.destroy();
+  }
 
-/**
- * Crear gráficas con Chart.js
- */
-private crearGraficas(): void {
-  this.crearGraficaBarras();
-  this.crearGraficaCircular();
-}
+  /**
+   * Crear gráficas con Chart.js
+   */
+  private crearGraficas(): void {
+    this.crearGraficaBarras();
+    this.crearGraficaCircular();
+  }
 
-/**
- * Crear gráfica de barras
- */
-private crearGraficaBarras(): void {
-  const datos = this.datosGraficaCategorias();
-  
-  if (datos.length === 0 || !this.chartCategorias) return;
+  /**
+   * Crear gráfica de barras
+   */
+  private crearGraficaBarras(): void {
+    const datos = this.datosGraficaCategorias();
 
-  // Destruir gráfica anterior si existe
-  this.chartBarras?.destroy();
+    if (datos.length === 0 || !this.chartCategorias) return;
 
-  const ctx = this.chartCategorias.nativeElement.getContext('2d');
-  if (!ctx) return;
+    // Destruir gráfica anterior si existe
+    this.chartBarras?.destroy();
 
-  this.chartBarras = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: datos.map(d => d.nombre),
-      datasets: [{
-        label: 'Stock por Categoría',
-        data: datos.map(d => d.stock),
-        backgroundColor: datos.map(d => d.color),
-        borderColor: datos.map(d => d.color),
-        borderWidth: 2,
-        borderRadius: 8,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false
-        },
-        tooltip: {
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          padding: 12,
-          titleColor: '#fff',
-          bodyColor: '#fff',
-          borderColor: '#4f46e5',
-          borderWidth: 1,
-          titleFont: {
-            size: 13
-          },
-          bodyFont: {
-            size: 12
-          },
-          callbacks: {
-            label: (context) => {
-              return `Stock: ${context.parsed.y} unidades`;
-            }
-          }
-        }
+    const ctx = this.chartCategorias.nativeElement.getContext('2d');
+    if (!ctx) return;
+
+    this.chartBarras = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: datos.map(d => d.nombre),
+        datasets: [{
+          label: 'Stock por Categoría',
+          data: datos.map(d => d.stock),
+          backgroundColor: datos.map(d => d.color),
+          borderColor: datos.map(d => d.color),
+          borderWidth: 2,
+          borderRadius: 8,
+        }]
       },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            font: {
-              size: window.innerWidth < 768 ? 10 : 12
-            }
-          },
-          grid: {
-            color: 'rgba(0, 0, 0, 0.05)'
-          }
-        },
-        x: {
-          ticks: {
-            font: {
-              size: window.innerWidth < 768 ? 10 : 12
-            },
-            maxRotation: window.innerWidth < 768 ? 45 : 0,
-            minRotation: window.innerWidth < 768 ? 45 : 0
-          },
-          grid: {
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
             display: false
-          }
-        }
-      }
-    }
-  });
-}
-
-/**
- * Crear gráfica circular (pie)
- */
-private crearGraficaCircular(): void {
-  const datos = this.datosValorCategoria();
-  
-  if (datos.length === 0 || !this.chartCircular) return;
-
-  // Destruir gráfica anterior si existe
-  this.chartPie?.destroy();
-
-  const ctx = this.chartCircular.nativeElement.getContext('2d');
-  if (!ctx) return;
-
-  this.chartPie = new Chart(ctx, {
-    type: 'pie',
-    data: {
-      labels: datos.map(d => d.nombre),
-      datasets: [{
-        data: datos.map(d => d.valor),
-        backgroundColor: datos.map(d => d.color),
-        borderColor: '#fff',
-        borderWidth: 2,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            padding: window.innerWidth < 768 ? 10 : 15,
-            font: {
-              size: window.innerWidth < 768 ? 10 : 12
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            borderColor: '#4f46e5',
+            borderWidth: 1,
+            titleFont: {
+              size: 13
             },
-            boxWidth: window.innerWidth < 768 ? 12 : 15,
-            boxHeight: window.innerWidth < 768 ? 12 : 15
+            bodyFont: {
+              size: 12
+            },
+            callbacks: {
+              label: (context) => {
+                return `Stock: ${context.parsed.y} unidades`;
+              }
+            }
           }
         },
-        tooltip: {
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          padding: 12,
-          titleColor: '#fff',
-          bodyColor: '#fff',
-          borderColor: '#4f46e5',
-          borderWidth: 1,
-          titleFont: {
-            size: 13
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              font: {
+                size: window.innerWidth < 768 ? 10 : 12
+              }
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
           },
-          bodyFont: {
-            size: 12
-          },
-          callbacks: {
-            label: (context) => {
-              const valor = context.parsed as number;
-              return `${context.label}: S/ ${valor.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
+          x: {
+            ticks: {
+              font: {
+                size: window.innerWidth < 768 ? 10 : 12
+              },
+              maxRotation: window.innerWidth < 768 ? 45 : 0,
+              minRotation: window.innerWidth < 768 ? 45 : 0
+            },
+            grid: {
+              display: false
             }
           }
         }
       }
-    }
-  });
-}
+    });
+  }
+
+  /**
+   * Crear gráfica circular (pie)
+   */
+  private crearGraficaCircular(): void {
+    const datos = this.datosValorCategoria();
+
+    if (datos.length === 0 || !this.chartCircular) return;
+
+    // Destruir gráfica anterior si existe
+    this.chartPie?.destroy();
+
+    const ctx = this.chartCircular.nativeElement.getContext('2d');
+    if (!ctx) return;
+
+    this.chartPie = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: datos.map(d => d.nombre),
+        datasets: [{
+          data: datos.map(d => d.valor),
+          backgroundColor: datos.map(d => d.color),
+          borderColor: '#fff',
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: window.innerWidth < 768 ? 10 : 15,
+              font: {
+                size: window.innerWidth < 768 ? 10 : 12
+              },
+              boxWidth: window.innerWidth < 768 ? 12 : 15,
+              boxHeight: window.innerWidth < 768 ? 12 : 15
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            borderColor: '#4f46e5',
+            borderWidth: 1,
+            titleFont: {
+              size: 13
+            },
+            bodyFont: {
+              size: 12
+            },
+            callbacks: {
+              label: (context) => {
+                const valor = context.parsed as number;
+                return `${context.label}: S/ ${valor.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
 }
