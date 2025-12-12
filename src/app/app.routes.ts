@@ -35,14 +35,13 @@ export const routes: Routes = [
   },
 
   // ⏸️ COMENTADO TEMPORALMENTE - Descomentar cuando crees el componente
-  /*
   {
     path: 'inventario/:id',
     loadComponent: () => import('./components/inventario/detalle-producto/detalle-producto')
       .then(m => m.DetalleProducto),
     canActivate: [authGuard]
   },
-  */
+  
 
   {
     path: 'categorias',
@@ -65,14 +64,13 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
 
-  // ⏸️ COMENTADO TEMPORALMENTE - Descomentar cuando crees el componente
-  /*
+
   {
     path: 'not-found',
     loadComponent: () => import('./components/not-found/not-found')
       .then(m => m.NotFound)
   },
-  */
+  
 
   // Ruta para URLs no encontradas (temporal)
   {
