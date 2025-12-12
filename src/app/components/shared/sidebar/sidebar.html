@@ -1,6 +1,7 @@
 <!-- ===================================
      TEMPLATE DEL SIDEBAR
      Archivo: src/app/components/shared/sidebar/sidebar.component.html
+     ✅ Con notificaciones en tiempo real
      =================================== -->
 
 <aside class="sidebar">
@@ -9,6 +10,14 @@
     <div class="logo-text">
       <h1>Inventario<span class="accent">Pro</span></h1>
     </div>
+
+    <!-- 🔔 Botón de Notificaciones -->
+    <button class="notification-btn" (click)="toggleNotificaciones()" title="Notificaciones">
+      <span class="bell-icon">🔔</span>
+      <span class="notification-badge" *ngIf="realtimeNotifications.noLeidas() > 0">
+        {{ realtimeNotifications.noLeidas() > 99 ? '99+' : realtimeNotifications.noLeidas() }}
+      </span>
+    </button>
   </div>
 
   <nav class="sidebar-nav">
@@ -113,3 +122,6 @@
     </div>
   </div>
 </div>
+
+<!-- 🔔 Panel de Notificaciones -->
+<app-notification-panel [visible]="mostrarNotificaciones()" (cerrar)="cerrarNotificaciones()"></app-notification-panel>

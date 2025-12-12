@@ -1,0 +1,54 @@
+<!-- ===================================
+     TEMPLATE DEL PANEL DE NOTIFICACIONES
+     Archivo: src/app/components/shared/notification-panel/notification-panel.html
+     =================================== -->
+
+<div class="notification-panel" *ngIf="visible" (click)="$event.stopPropagation()">
+    <!-- Header del panel -->
+    <div class="panel-header">
+        <h3>🔔 Notificaciones</h3>
+        <div class="header-actions">
+            <button class="btn-action" (click)="marcarTodasLeidas()" title="Marcar todas como leídas"
+                *ngIf="notificaciones().length > 0">
+                ✓✓
+            </button>
+            <button class="btn-action btn-danger" (click)="limpiarTodas()" title="Limpiar todas"
+                *ngIf="notificaciones().length > 0">
+                🗑️
+            </button>
+            <button class="btn-close" (click)="cerrarPanel()">×</button>
+        </div>
+    </div>
+
+    <!-- Lista de notificaciones -->
+    <div class="notification-list">
+        <ng-container *ngIf="notificaciones().length > 0; else sinNotificaciones">
+            <div *ngFor="let notificacion of notificaciones()" class="notification-item"
+                [class.no-leida]="!notificacion.leida" [ngClass]="obtenerClaseTipo(notificacion.tipo)"
+                (click)="marcarLeida(notificacion)">
+                <div class="notification-icon">
+                    {{ notificacion.icono }}
+                </div>
+                <div class="notification-content">
+                    <div class="notification-titulo">{{ notificacion.titulo }}</div>
+                    <div class="notification-mensaje">{{ notificacion.mensaje }}</div>
+                    <div class="notification-fecha">{{ formatearFecha(notificacion.fecha) }}</div>
+                </div>
+                <button class="btn-delete" (click)="eliminar(notificacion, $event)" title="Eliminar">
+                    ×
+                </button>
+            </div>
+        </ng-container>
+
+        <ng-template #sinNotificaciones>
+            <div class="empty-state">
+                <div class="empty-icon">🔔</div>
+                <p>No hay notificaciones</p>
+                <span>Las notificaciones aparecerán aquí</span>
+            </div>
+        </ng-template>
+    </div>
+</div>
+
+<!-- Overlay para cerrar al hacer clic fuera -->
+<div class="notification-overlay" *ngIf="visible" (click)="cerrarPanel()"></div>

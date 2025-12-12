@@ -9,16 +9,18 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Producto, EstadoStock } from '../models/producto.model';
 import { FirebaseService } from './firebase.service';
+import { RealtimeNotificationsService } from './realtime-notifications.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductosService {
   private firebaseService = inject(FirebaseService);
+  private realtimeNotifications = inject(RealtimeNotificationsService);
 
   // Signal con los productos
   private productosSignal = signal<Producto[]>([]);
-  
+
   // Computed para acceso de solo lectura
   productos = this.productosSignal.asReadonly();
 
@@ -52,10 +54,10 @@ export class ProductosService {
     try {
       this.cargando.set(true);
       console.log('📥 Cargando productos desde Firestore...');
-      
+
       const productos = await this.firebaseService.obtenerProductos();
       this.productosSignal.set(productos);
-      
+
       console.log(`✅ ${productos.length} productos cargados`);
     } catch (error) {
       console.error('❌ Error al cargar productos:', error);
@@ -84,18 +86,27 @@ export class ProductosService {
   async agregar(producto: Omit<Producto, 'id'>): Promise<Producto | null> {
     try {
       console.log('➕ Agregando producto:', producto.nombre);
-      
+
       const nuevoProducto = await this.firebaseService.agregarProducto(producto);
-      
+
       if (nuevoProducto) {
         // Agregar al signal local
         const actuales = this.productosSignal();
         this.productosSignal.set([...actuales, nuevoProducto]);
-        
+
         console.log('✅ Producto agregado');
+
+        // 🔔 Notificar producto agregado
+        await this.realtimeNotifications.notificarProductoAgregado(producto.nombre);
+
+        // 🔔 Verificar si tiene stock bajo
+        if (producto.stock > 0 && producto.stock < 10) {
+          await this.realtimeNotifications.notificarStockBajo(producto.nombre, producto.stock);
+        }
+
         return nuevoProducto;
       }
-      
+
       return null;
     } catch (error) {
       console.error('❌ Error al agregar producto:', error);
@@ -110,7 +121,7 @@ export class ProductosService {
     try {
       const actuales = this.productosSignal();
       const productoActual = actuales.find(p => p.id === id);
-      
+
       if (!productoActual) {
         console.error('❌ Producto no encontrado');
         return false;
@@ -118,14 +129,14 @@ export class ProductosService {
 
       // Obtener el ID de Firestore
       const firestoreId = (productoActual as any)._firestoreId;
-      
+
       if (!firestoreId) {
         console.error('❌ ID de Firestore no encontrado');
         return false;
       }
 
       console.log('✏️ Actualizando producto:', productoActual.nombre);
-      
+
       const actualizado = await this.firebaseService.actualizarProducto(
         firestoreId,
         producto
@@ -138,8 +149,18 @@ export class ProductosService {
           actuales[index] = { ...actuales[index], ...producto };
           this.productosSignal.set([...actuales]);
         }
-        
+
         console.log('✅ Producto actualizado');
+
+        // 🔔 Notificar producto editado
+        await this.realtimeNotifications.notificarProductoEditado(productoActual.nombre);
+
+        // 🔔 Verificar si ahora tiene stock bajo
+        const stockActualizado = producto.stock ?? productoActual.stock;
+        if (stockActualizado > 0 && stockActualizado < 10) {
+          await this.realtimeNotifications.notificarStockBajo(productoActual.nombre, stockActualizado);
+        }
+
         return true;
       }
 
@@ -157,7 +178,7 @@ export class ProductosService {
     try {
       const actuales = this.productosSignal();
       const producto = actuales.find(p => p.id === id);
-      
+
       if (!producto) {
         console.error('❌ Producto no encontrado');
         return false;
@@ -165,22 +186,26 @@ export class ProductosService {
 
       // Obtener el ID de Firestore
       const firestoreId = (producto as any)._firestoreId;
-      
+
       if (!firestoreId) {
         console.error('❌ ID de Firestore no encontrado');
         return false;
       }
 
       console.log('🗑️ Eliminando producto:', producto.nombre);
-      
+
       const eliminado = await this.firebaseService.eliminarProducto(firestoreId);
 
       if (eliminado) {
         // Eliminar del signal local
         const nuevosProductos = actuales.filter(p => p.id !== id);
         this.productosSignal.set(nuevosProductos);
-        
+
         console.log('✅ Producto eliminado');
+
+        // 🔔 Notificar producto eliminado
+        await this.realtimeNotifications.notificarProductoEliminado(producto.nombre);
+
         return true;
       }
 
