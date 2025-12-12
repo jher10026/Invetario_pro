@@ -11,6 +11,8 @@ import {
   Auth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
   signOut,
   onAuthStateChanged
 } from '@angular/fire/auth';
@@ -65,7 +67,7 @@ export class FirebaseService {
       }
 
       console.log('🔔 Firebase Auth cambió:', firebaseUser?.email || 'Sin usuario');
-      
+
       if (firebaseUser) {
         const userData = await this.obtenerDatosUsuario(firebaseUser.uid);
         console.log('👤 Datos del usuario cargados:', userData);
@@ -145,12 +147,61 @@ export class FirebaseService {
       console.log('🔐 Iniciando sesión:', email);
 
       await signInWithEmailAndPassword(this.auth, email, password);
-      
+
       console.log('✅ Sesión iniciada correctamente');
       return { success: true, message: 'Sesión iniciada correctamente' };
 
     } catch (error: any) {
       console.error('❌ Error en login:', error);
+      return this.manejarErrorAuth(error);
+    }
+  }
+
+  /**
+   * Iniciar sesión con Google
+   */
+  async loginConGoogle(): Promise<{ success: boolean; message: string }> {
+    try {
+      console.log('🔐 Iniciando sesión con Google...');
+
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(this.auth, provider);
+
+      console.log('✅ Sesión con Google iniciada:', userCredential.user.email);
+
+      // Verificar si el usuario existe en Firestore, si no, crearlo
+      const existingUser = await this.obtenerDatosUsuario(userCredential.user.uid);
+
+      if (!existingUser) {
+        // Crear usuario en Firestore con datos de Google
+        const usuarioData = {
+          uid: userCredential.user.uid,
+          name: userCredential.user.displayName || 'Usuario Google',
+          email: userCredential.user.email || '',
+          role: 'user',
+          createdAt: Timestamp.now(),
+          provider: 'google'
+        };
+
+        const usuarioRef = doc(this.firestore, 'usuarios', userCredential.user.uid);
+        await setDoc(usuarioRef, usuarioData);
+
+        console.log('✅ Usuario de Google guardado en Firestore:', usuarioData);
+      }
+
+      return { success: true, message: 'Sesión iniciada con Google' };
+
+    } catch (error: any) {
+      console.error('❌ Error en login con Google:', error);
+
+      // Manejar errores específicos de popup
+      if (error.code === 'auth/popup-closed-by-user') {
+        return { success: false, message: 'Inicio de sesión cancelado' };
+      }
+      if (error.code === 'auth/popup-blocked') {
+        return { success: false, message: 'El popup fue bloqueado. Permite ventanas emergentes.' };
+      }
+
       return this.manejarErrorAuth(error);
     }
   }
@@ -205,9 +256,9 @@ export class FirebaseService {
         productosRef,
         orderBy('fecha', 'desc')
       );
-      
+
       const snapshot = await getDocs(q);
-      
+
       return snapshot.docs.map(doc => ({
         id: parseInt(doc.id) || Date.now(),
         ...doc.data(),
@@ -379,7 +430,7 @@ export class FirebaseService {
   private async obtenerDatosUsuario(uid: string): Promise<Usuario | null> {
     try {
       console.log('🔥 Buscando datos del usuario en Firestore, UID:', uid);
-      
+
       const usuariosRef = collection(this.firestore, 'usuarios');
       const q = query(usuariosRef, where('uid', '==', uid));
       const snapshot = await getDocs(q);
@@ -387,7 +438,7 @@ export class FirebaseService {
       if (!snapshot.empty) {
         const userData = snapshot.docs[0].data();
         console.log('✅ Datos encontrados en Firestore:', userData);
-        
+
         return {
           username: userData['email'],
           password: '',
@@ -400,7 +451,7 @@ export class FirebaseService {
       const authUser = this.auth.currentUser;
       if (authUser) {
         console.warn('⚠️ Usuario no encontrado en Firestore, creando documento...');
-        
+
         const nuevoUsuario = {
           uid: authUser.uid,
           name: authUser.displayName || authUser.email?.split('@')[0] || 'Usuario',
@@ -411,7 +462,7 @@ export class FirebaseService {
 
         const usuarioRef = doc(this.firestore, 'usuarios', authUser.uid);
         await setDoc(usuarioRef, nuevoUsuario);
-        
+
         console.log('✅ Documento de usuario creado en Firestore');
 
         return {
@@ -427,7 +478,7 @@ export class FirebaseService {
       return null;
     } catch (error) {
       console.error('❌ Error al obtener datos de usuario:', error);
-      
+
       const authUser = this.auth.currentUser;
       if (authUser) {
         console.warn('⚠️ Usando datos de Auth como fallback');
@@ -439,7 +490,7 @@ export class FirebaseService {
           role: 'user'
         };
       }
-      
+
       return null;
     }
   }

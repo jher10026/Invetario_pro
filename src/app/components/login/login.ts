@@ -26,14 +26,14 @@ import { trigger, state, style, transition, animate, keyframes } from '@angular/
     // Animación para la tarjeta del login
     trigger('cardAnimation', [
       transition(':enter', [
-        style({ 
-          opacity: 0, 
-          transform: 'translateY(-50px) scale(0.9)' 
+        style({
+          opacity: 0,
+          transform: 'translateY(-50px) scale(0.9)'
         }),
-        animate('600ms cubic-bezier(0.34, 1.56, 0.64, 1)', 
-          style({ 
-            opacity: 1, 
-            transform: 'translateY(0) scale(1)' 
+        animate('600ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+          style({
+            opacity: 1,
+            transform: 'translateY(0) scale(1)'
           })
         )
       ])
@@ -42,22 +42,22 @@ import { trigger, state, style, transition, animate, keyframes } from '@angular/
     // Animación para los formularios (entrada y salida)
     trigger('formAnimation', [
       transition(':enter', [
-        style({ 
-          opacity: 0, 
-          transform: 'translateX(-30px)' 
+        style({
+          opacity: 0,
+          transform: 'translateX(-30px)'
         }),
-        animate('400ms 200ms cubic-bezier(0.4, 0, 0.2, 1)', 
-          style({ 
-            opacity: 1, 
-            transform: 'translateX(0)' 
+        animate('400ms 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+          style({
+            opacity: 1,
+            transform: 'translateX(0)'
           })
         )
       ]),
       transition(':leave', [
-        animate('300ms cubic-bezier(0.4, 0, 0.2, 1)', 
-          style({ 
-            opacity: 0, 
-            transform: 'translateX(30px)' 
+        animate('300ms cubic-bezier(0.4, 0, 0.2, 1)',
+          style({
+            opacity: 0,
+            transform: 'translateX(30px)'
           })
         )
       ])
@@ -73,10 +73,10 @@ import { trigger, state, style, transition, animate, keyframes } from '@angular/
         ]))
       ]),
       transition(':leave', [
-        animate('200ms ease-out', 
-          style({ 
-            opacity: 0, 
-            transform: 'translateY(-10px) scale(0.95)' 
+        animate('200ms ease-out',
+          style({
+            opacity: 0,
+            transform: 'translateY(-10px) scale(0.95)'
           })
         )
       ])
@@ -85,14 +85,14 @@ import { trigger, state, style, transition, animate, keyframes } from '@angular/
     // Animación del spinner de carga
     trigger('spinnerAnimation', [
       transition(':enter', [
-        style({ 
-          opacity: 0, 
-          transform: 'scale(0)' 
+        style({
+          opacity: 0,
+          transform: 'scale(0)'
         }),
-        animate('300ms cubic-bezier(0.34, 1.56, 0.64, 1)', 
-          style({ 
-            opacity: 1, 
-            transform: 'scale(1)' 
+        animate('300ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+          style({
+            opacity: 1,
+            transform: 'scale(1)'
           })
         )
       ])
@@ -101,14 +101,14 @@ import { trigger, state, style, transition, animate, keyframes } from '@angular/
     // Animación para los botones
     trigger('buttonAnimation', [
       transition(':enter', [
-        style({ 
-          opacity: 0, 
-          transform: 'translateY(20px)' 
+        style({
+          opacity: 0,
+          transform: 'translateY(20px)'
         }),
-        animate('400ms 300ms cubic-bezier(0.4, 0, 0.2, 1)', 
-          style({ 
-            opacity: 1, 
-            transform: 'translateY(0)' 
+        animate('400ms 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+          style({
+            opacity: 1,
+            transform: 'translateY(0)'
           })
         )
       ])
@@ -126,6 +126,7 @@ export class Login implements OnInit, OnDestroy {
   // Control de vista
   mostrarLogin = signal(true);
   cargando = signal(false);
+  cargandoGoogle = signal(false);
 
   // Formulario de login
   loginEmail = signal('');
@@ -193,7 +194,7 @@ export class Login implements OnInit, OnDestroy {
 
       if (resultado.success) {
         this.mensajeExito.set('¡Bienvenido! Redirigiendo...');
-        
+
         // Esperar a que el usuario se cargue
         this.firebaseService.currentUser$.pipe(
           filter(user => user !== null && user !== undefined),
@@ -220,14 +221,48 @@ export class Login implements OnInit, OnDestroy {
    */
 
   /**
+   * Login con Google
+   */
+  async handleLoginGoogle(): Promise<void> {
+    this.limpiarMensajes();
+    this.cargandoGoogle.set(true);
+
+    try {
+      const resultado = await this.firebaseService.loginConGoogle();
+
+      if (resultado.success) {
+        this.mensajeExito.set('¡Bienvenido! Redirigiendo...');
+
+        // Esperar a que el usuario se cargue
+        this.firebaseService.currentUser$.pipe(
+          filter(user => user !== null && user !== undefined),
+          take(1)
+        ).subscribe(user => {
+          console.log('✅ Usuario de Google cargado, redirigiendo a:', this.returnUrl);
+          setTimeout(() => {
+            this.router.navigate([this.returnUrl]);
+          }, 500);
+        });
+      } else {
+        this.mensajeError.set(resultado.message);
+      }
+    } catch (error) {
+      console.error('Error en login con Google:', error);
+      this.mensajeError.set('Error inesperado al iniciar sesión con Google');
+    } finally {
+      this.cargandoGoogle.set(false);
+    }
+  }
+
+  /**
    * Procesar registro
    */
   async handleRegistro(): Promise<void> {
     this.limpiarMensajes();
 
     // Validaciones
-    if (!this.registroName() || !this.registroEmail() || 
-        !this.registroPassword() || !this.registroPasswordConfirm()) {
+    if (!this.registroName() || !this.registroEmail() ||
+      !this.registroPassword() || !this.registroPasswordConfirm()) {
       this.mensajeError.set('Por favor completa todos los campos');
       return;
     }
@@ -258,7 +293,7 @@ export class Login implements OnInit, OnDestroy {
 
       if (resultado.success) {
         this.mensajeExito.set(resultado.message + ' Por favor inicia sesión.');
-        
+
         // 🆕 Cambiar a login más rápido (1 segundo)
         setTimeout(() => {
           this.limpiarFormularios();

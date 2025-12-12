@@ -45,6 +45,7 @@
     opacity: 0;
     transform: translateY(-30px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -67,9 +68,11 @@
   0% {
     transform: scale(0);
   }
+
   50% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
   }
@@ -107,6 +110,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -271,7 +275,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Footer */
@@ -457,7 +463,8 @@
 
   .form-group input {
     padding: 12px 14px;
-    font-size: 16px; /* Previene zoom en iOS */
+    font-size: 16px;
+    /* Previene zoom en iOS */
   }
 
   .btn {
@@ -483,15 +490,16 @@
   .logo {
     font-size: 2.5rem;
   }
-  
+
   .form-group input {
     padding: 10px 12px;
   }
-  
+
   .btn {
     padding: 10px 16px;
   }
 }
+
 /* Wrapper para input de contraseña con botón */
 .password-input-wrapper {
   position: relative;
@@ -500,7 +508,8 @@
 
 .password-input-wrapper input {
   width: 100%;
-  padding-right: 50px; /* Espacio para el botón */
+  padding-right: 50px;
+  /* Espacio para el botón */
 }
 
 .toggle-password {
@@ -539,4 +548,61 @@
 /* Ajuste para que el input no interfiera con el botón */
 .password-input-wrapper input:focus {
   padding-right: 50px;
+}
+
+/* ===================================
+   BOTÓN DE GOOGLE
+   =================================== */
+
+/* Separador */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+  gap: 16px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #e5e7eb, transparent);
+}
+
+.divider span {
+  color: #9ca3af;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Botón de Google */
+.btn-google {
+  background: white;
+  color: #374151;
+  border: 2px solid #e5e7eb;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-google:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.btn-google:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.google-icon {
+  flex-shrink: 0;
+}
+
+/* Spinner oscuro para botón de Google */
+.spinner-dark {
+  border-color: rgba(0, 0, 0, 0.1);
+  border-top-color: #374151;
 }
