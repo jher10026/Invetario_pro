@@ -7,13 +7,28 @@
 ### ✨ Características Principales
 
 - 🔐 **Autenticación segura** con Firebase Authentication
-- 📊 **Dashboard interactivo** con estadísticas en tiempo real
+  - Inicio de sesión con email y contraseña
+  - **Inicio de sesión con Google** (OAuth 2.0)
+  - Registro de nuevos usuarios
+- 👤 **Gestión de perfil de usuario**
+  - 📷 **Foto de perfil personalizable** con integración ImgBB
+  - Cambio y eliminación de avatar
+- �📊 **Dashboard interactivo** con estadísticas en tiempo real
 - 📦 **Gestión de productos** (CRUD completo)
 - 🏷️ **Categorización** de productos con colores personalizados
 - 📈 **Reportes y gráficos** con Chart.js
-- 🔔 **Notificaciones** en tiempo real
+- 🔔 **Sistema de notificaciones en tiempo real**
+  - Alertas de stock bajo
+  - Notificaciones de productos agregados/editados/eliminados
+  - Notificaciones de categorías
+  - Panel de notificaciones con contador de no leídas
 - 📱 **Diseño responsive** adaptable a cualquier dispositivo
 - 🎨 **Interfaz moderna** con animaciones fluidas
+- 🔧 **Pipes personalizados**
+  - Formateo de moneda
+  - Estado de stock (disponible/bajo/agotado)
+  - Tiempo transcurrido (hace X minutos)
+  - Resaltado de texto en búsquedas
 
 ---
 
@@ -28,8 +43,12 @@
 ### Backend y Base de Datos
 - **Firebase 11.10** - Backend as a Service
   - Firebase Authentication - Gestión de usuarios
-  - Cloud Firestore - Base de datos NoSQL
+  - Google OAuth 2.0 - Autenticación con Google
+  - Cloud Firestore - Base de datos NoSQL en tiempo real
   - Firebase Hosting - Despliegue de aplicación
+
+### Servicios Externos
+- **ImgBB API** - Alojamiento de imágenes para fotos de perfil
 
 ### Herramientas de Desarrollo
 - **Angular CLI 20.3** - Herramienta de línea de comandos
