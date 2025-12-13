@@ -537,8 +537,9 @@ export class FirebaseService {
   /**
    * 📋 OBTENER TODAS LAS CATEGORÍAS
    * ---------------------------------
-   * Si el usuario no está autenticado, retorna categorías por defecto.
-   * Si no hay categorías en Firestore, las crea automáticamente.
+   * Lee las categorías desde Firestore.
+   * Si no hay usuario, retorna array vacío.
+   * Si no hay categorías, retorna array vacío (el usuario debe crearlas).
    * 
    * @returns Array de categorías
    */
@@ -547,13 +548,8 @@ export class FirebaseService {
       const user = this.auth.currentUser;
 
       if (!user) {
-        // Sin usuario: retornar categorías por defecto
-        return [
-          { id: 1, nombre: 'Electrónica', color: '#3b82f6' },
-          { id: 2, nombre: 'Ropa', color: '#ec4899' },
-          { id: 3, nombre: 'Hogar', color: '#fb923c' },
-          { id: 4, nombre: 'Gaming', color: '#a855f7' }
-        ];
+        // Sin usuario: retornar array vacío
+        return [];
       }
 
       // Obtener categorías de Firestore
@@ -561,9 +557,9 @@ export class FirebaseService {
       const q = query(categoriasRef);
       const snapshot = await getDocs(q);
 
-      // Si no hay categorías, crear las por defecto
+      // Si no hay categorías, retornar array vacío
       if (snapshot.empty) {
-        return await this.crearCategoriasDefecto(user.uid);
+        return [];
       }
 
       // Mapear documentos a objetos Categoria
@@ -578,41 +574,7 @@ export class FirebaseService {
     }
   }
 
-  /**
-   * 🏗️ CREAR CATEGORÍAS POR DEFECTO
-   * ---------------------------------
-   * Se ejecuta la primera vez que un usuario accede
-   * y no tiene categorías creadas.
-   * 
-   * @param userId - UID del usuario
-   * @returns Array de categorías creadas
-   */
-  private async crearCategoriasDefecto(userId: string): Promise<Categoria[]> {
-    const categoriasDefecto = [
-      { nombre: 'Electrónica', color: '#3b82f6' },
-      { nombre: 'Ropa', color: '#ec4899' },
-      { nombre: 'Hogar', color: '#fb923c' },
-      { nombre: 'Gaming', color: '#a855f7' }
-    ];
-
-    const categorias: Categoria[] = [];
-
-    // Crear cada categoría en Firestore
-    for (const cat of categoriasDefecto) {
-      const docRef = await addDoc(collection(this.firestore, 'categorias'), {
-        ...cat,
-        createdAt: Timestamp.now()
-      });
-
-      categorias.push({
-        id: Date.now() + Math.random(),
-        ...cat,
-        _firestoreId: docRef.id
-      } as any);
-    }
-
-    return categorias;
-  }
+  // Método crearCategoriasDefecto eliminado - ya no se crean categorías automáticamente
 
   /**
    * ➕ AGREGAR NUEVA CATEGORÍA

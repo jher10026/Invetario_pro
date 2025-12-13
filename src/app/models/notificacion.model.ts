@@ -10,6 +10,9 @@ export type TipoNotificacion =
     | 'stock_bajo'
     | 'producto_editado'
     | 'producto_eliminado'
+    | 'categoria_agregada'
+    | 'categoria_editada'
+    | 'categoria_eliminada'
     | 'info'
     | 'warning';
 
@@ -37,6 +40,12 @@ export function obtenerIconoNotificacion(tipo: TipoNotificacion): string {
             return '✏️';
         case 'producto_eliminado':
             return '🗑️';
+        case 'categoria_agregada':
+            return '📁';
+        case 'categoria_editada':
+            return '📝';
+        case 'categoria_eliminada':
+            return '🗂️';
         case 'warning':
             return '⚠️';
         case 'info':

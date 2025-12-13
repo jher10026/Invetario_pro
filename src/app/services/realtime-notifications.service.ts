@@ -256,4 +256,41 @@ export class RealtimeNotificationsService implements OnDestroy {
             `Se eliminó "${nombreProducto}" del inventario`
         );
     }
+
+    // ============================================
+    //  MÉTODOS HELPER PARA CATEGORÍAS
+    // ============================================
+
+    /**
+     * Notificar categoría agregada
+     */
+    async notificarCategoriaAgregada(nombreCategoria: string): Promise<void> {
+        await this.crearNotificacion(
+            'categoria_agregada',
+            'Nueva Categoría',
+            `Se creó la categoría "${nombreCategoria}"`
+        );
+    }
+
+    /**
+     * Notificar categoría editada
+     */
+    async notificarCategoriaEditada(nombreCategoria: string): Promise<void> {
+        await this.crearNotificacion(
+            'categoria_editada',
+            'Categoría Actualizada',
+            `Se actualizó la categoría "${nombreCategoria}"`
+        );
+    }
+
+    /**
+     * Notificar categoría eliminada
+     */
+    async notificarCategoriaEliminada(nombreCategoria: string): Promise<void> {
+        await this.crearNotificacion(
+            'categoria_eliminada',
+            'Categoría Eliminada',
+            `Se eliminó la categoría "${nombreCategoria}"`
+        );
+    }
 }

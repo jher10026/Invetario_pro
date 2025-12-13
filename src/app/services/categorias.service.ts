@@ -33,6 +33,9 @@ import { Categoria } from '../models/categoria.model';
 import { FirebaseService } from './firebase.service';
 // FirebaseService: Servicio que maneja la comunicación con Firebase
 
+import { RealtimeNotificationsService } from './realtime-notifications.service';
+// RealtimeNotificationsService: Servicio para notificaciones en tiempo real
+
 // ==========================================
 // 🎨 CONFIGURACIÓN DEL SERVICIO
 // ==========================================
@@ -47,6 +50,9 @@ export class CategoriasService {
 
   private firebaseService = inject(FirebaseService);
   // Servicio principal para comunicación con Firebase
+
+  private realtimeNotifications = inject(RealtimeNotificationsService);
+  // Servicio para enviar notificaciones en tiempo real
 
   // ==========================================
   // 📊 ESTADO LOCAL CON SIGNALS
@@ -76,16 +82,10 @@ export class CategoriasService {
   // ==========================================
 
   /**
-   * Categorías que se usan cuando:
-   * - El usuario no está autenticado
-   * - Hay un error al cargar desde Firebase
+   * Array vacío - No hay categorías precargadas
+   * El usuario debe crear sus propias categorías
    */
-  private categoriasPorDefecto: Categoria[] = [
-    { id: 1, nombre: 'Electrónica', color: '#3b82f6' },  // Azul
-    { id: 2, nombre: 'Ropa', color: '#ec4899' },         // Rosa
-    { id: 3, nombre: 'Hogar', color: '#fb923c' },        // Naranja
-    { id: 4, nombre: 'Gaming', color: '#a855f7' }        // Púrpura
-  ];
+  private categoriasPorDefecto: Categoria[] = [];
 
   // ==========================================
   // 🏗️ CONSTRUCTOR
@@ -208,6 +208,9 @@ export class CategoriasService {
         const actuales = this.categoriasSignal();
         this.categoriasSignal.set([...actuales, nuevaCategoria]);
 
+        // Enviar notificación en tiempo real
+        await this.realtimeNotifications.notificarCategoriaAgregada(categoria.nombre);
+
         console.log('✅ Categoría guardada exitosamente');
         return nuevaCategoria;
       }
@@ -262,6 +265,10 @@ export class CategoriasService {
           // Crear nuevo array para que Angular detecte el cambio
           this.categoriasSignal.set([...actuales]);
 
+          // Enviar notificación en tiempo real
+          const nombreActualizado = cambios.nombre || categoria.nombre;
+          await this.realtimeNotifications.notificarCategoriaEditada(nombreActualizado);
+
           console.log('✅ Categoría actualizada en Firebase');
           return true;
         }
@@ -313,6 +320,9 @@ export class CategoriasService {
           // Actualizar signal local (filtrar la categoría eliminada)
           const nuevasCategorias = actuales.filter(c => c.id !== id);
           this.categoriasSignal.set(nuevasCategorias);
+
+          // Enviar notificación en tiempo real
+          await this.realtimeNotifications.notificarCategoriaEliminada(categoria.nombre);
 
           console.log('✅ Categoría eliminada de Firebase');
           return true;
