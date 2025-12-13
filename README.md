@@ -405,7 +405,7 @@ firebase deploy --only hosting
 
 ### 🔗 URL del Video
 ```
-📹 https://drive.google.com/file/d/1oN7TZnBZevtY8p2xOr4Z_dvcghm71DDY/view?usp=sharing
+https://drive.google.com/file/d/1oN7TZnBZevtY8p2xOr4Z_dvcghm71DDY/view?usp=sharing
 ```
 
 ### Contenido del Video (5-8 minutos)
