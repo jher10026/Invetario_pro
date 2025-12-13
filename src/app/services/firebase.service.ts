@@ -1,12 +1,51 @@
-/* ===================================
-   SERVICIO DE FIREBASE - MEJORADO
-   Archivo: src/app/services/firebase.service.ts
+/* ============================================================================
+   🔥 SERVICIO DE FIREBASE
+   ============================================================================
    
-   ✅ Registro con logout inmediato
-   ✅ Estado de "procesando registro"
-   =================================== */
+   📌 PROPÓSITO:
+   Es el servicio PRINCIPAL de la aplicación. Maneja toda la comunicación
+   con Firebase (autenticación y base de datos Firestore).
+   
+   🔧 FUNCIONALIDADES:
+   
+   🔐 AUTENTICACIÓN:
+   - Registrar nuevos usuarios
+   - Iniciar sesión con email/password
+   - Iniciar sesión con Google
+   - Cerrar sesión
+   - Verificar estado de autenticación
+   - Detectar rol de usuario (admin/user)
+   
+   📦 PRODUCTOS (CRUD):
+   - Obtener todos los productos
+   - Agregar nuevo producto
+   - Actualizar producto existente
+   - Eliminar producto
+   
+   📂 CATEGORÍAS (CRUD):
+   - Obtener todas las categorías
+   - Crear categorías por defecto
+   - Agregar nueva categoría
+   - Actualizar categoría existente
+   - Eliminar categoría
+   
+   👤 PERFIL DE USUARIO:
+   - Actualizar foto de perfil
+   - Eliminar foto de perfil
+   
+   📁 Archivo: src/app/services/firebase.service.ts
+   ============================================================================ */
 
+// ==========================================
+// 📦 IMPORTACIONES DE ANGULAR
+// ==========================================
 import { Injectable, inject } from '@angular/core';
+// Injectable: Decorador que permite que este servicio sea inyectado en otros componentes
+// inject: Función moderna para inyectar dependencias
+
+// ==========================================
+// 🔐 IMPORTACIONES DE FIREBASE AUTH
+// ==========================================
 import {
   Auth,
   createUserWithEmailAndPassword,
@@ -16,6 +55,17 @@ import {
   signOut,
   onAuthStateChanged
 } from '@angular/fire/auth';
+// Auth: Servicio de autenticación de Firebase
+// createUserWithEmailAndPassword: Crear usuario con email y contraseña
+// signInWithEmailAndPassword: Iniciar sesión con email y contraseña
+// signInWithPopup: Iniciar sesión con popup (para Google, Facebook, etc.)
+// GoogleAuthProvider: Proveedor de autenticación de Google
+// signOut: Cerrar sesión
+// onAuthStateChanged: Listener que detecta cambios en el estado de autenticación
+
+// ==========================================
+// 📊 IMPORTACIONES DE FIRESTORE
+// ==========================================
 import {
   Firestore,
   collection,
@@ -30,37 +80,121 @@ import {
   Timestamp,
   setDoc
 } from '@angular/fire/firestore';
+// Firestore: Base de datos NoSQL de Firebase
+// collection: Referencia a una colección (tabla)
+// addDoc: Agregar documento con ID automático
+// updateDoc: Actualizar documento existente
+// deleteDoc: Eliminar documento
+// doc: Referencia a un documento específico
+// getDocs: Obtener múltiples documentos
+// query: Crear consulta con filtros
+// where: Filtro condicional
+// orderBy: Ordenar resultados
+// Timestamp: Tipo de dato para fechas en Firestore
+// setDoc: Crear/sobrescribir documento con ID específico
+
+// ==========================================
+// 📦 IMPORTACIONES DE RXJS
+// ==========================================
 import { BehaviorSubject } from 'rxjs';
+// BehaviorSubject: Observable que guarda el último valor emitido
+// Útil para mantener el estado del usuario actual
+
+// ==========================================
+// 📦 IMPORTACIONES DE MODELOS
+// ==========================================
 import { Producto } from '../models/producto.model';
 import { Categoria } from '../models/categoria.model';
 import { Usuario } from '../models/usuario.model';
 
+// ==========================================
+// 🎨 CONFIGURACIÓN DEL SERVICIO
+// ==========================================
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root'  // El servicio está disponible en toda la aplicación
 })
 export class FirebaseService {
-  private auth = inject(Auth);
-  private firestore = inject(Firestore);
 
+  // ==========================================
+  // 🔌 INYECCIÓN DE SERVICIOS DE FIREBASE
+  // ==========================================
+
+  private auth = inject(Auth);
+  // Servicio de autenticación de Firebase
+
+  private firestore = inject(Firestore);
+  // Servicio de base de datos Firestore
+
+  // ==========================================
+  // 👤 ESTADO DEL USUARIO ACTUAL
+  // ==========================================
+
+  /**
+   * BehaviorSubject para el usuario actual
+   * 
+   * Posibles valores:
+   * - undefined: Aún no se ha verificado (estado inicial)
+   * - null: No hay usuario autenticado
+   * - Usuario: Usuario autenticado
+   * 
+   * Usamos BehaviorSubject porque:
+   * 1. Guarda el último valor emitido
+   * 2. Los nuevos suscriptores reciben el valor actual inmediatamente
+   * 3. Podemos obtener el valor actual con .value
+   */
   private currentUserSubject = new BehaviorSubject<Usuario | null | undefined>(undefined);
+
+  // Observable público para que los componentes se suscriban
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  // 🆕 Estado para bloquear UI durante registro
+  // ==========================================
+  // 🔄 ESTADO DE PROCESANDO REGISTRO
+  // ==========================================
+
+  /**
+   * Bloquea los cambios de autenticación durante el registro.
+   * 
+   * Problema que resuelve:
+   * Cuando un usuario se registra, Firebase automáticamente lo loguea.
+   * Pero nosotros queremos que el usuario inicie sesión manualmente después.
+   * Este flag evita que la UI responda al login automático.
+   */
   private procesandoRegistroSubject = new BehaviorSubject<boolean>(false);
   public procesandoRegistro$ = this.procesandoRegistroSubject.asObservable();
 
+  // ==========================================
+  // 🏗️ CONSTRUCTOR
+  // ==========================================
+
   constructor() {
     console.log('🔥 Firebase Service inicializado');
+    // Iniciar el listener de autenticación
     this.inicializarAuthListener();
   }
 
   // ============================================
-  //  INICIALIZACIÓN
+  //  🔄 LISTENER DE AUTENTICACIÓN
   // ============================================
 
+  /**
+   * 👂 INICIALIZAR LISTENER DE AUTENTICACIÓN
+   * ------------------------------------------
+   * Escucha cambios en el estado de autenticación de Firebase.
+   * 
+   * Se ejecuta cuando:
+   * - El usuario inicia sesión
+   * - El usuario cierra sesión
+   * - La página se recarga (verifica si hay sesión activa)
+   * 
+   * FLUJO:
+   * 1. Firebase notifica cambio de auth
+   * 2. Si hay usuario: obtener datos de Firestore
+   * 3. Si no hay usuario: establecer null
+   * 4. Actualizar el BehaviorSubject
+   */
   private inicializarAuthListener(): void {
     onAuthStateChanged(this.auth, async (firebaseUser) => {
-      // 🔒 Si estamos procesando registro, ignorar cambios de auth
+      // Ignorar cambios durante el proceso de registro
       if (this.procesandoRegistroSubject.value) {
         console.log('⏸️ Ignorando cambio de auth durante registro');
         return;
@@ -69,10 +203,12 @@ export class FirebaseService {
       console.log('🔔 Firebase Auth cambió:', firebaseUser?.email || 'Sin usuario');
 
       if (firebaseUser) {
+        // Usuario autenticado: obtener datos completos de Firestore
         const userData = await this.obtenerDatosUsuario(firebaseUser.uid);
         console.log('👤 Datos del usuario cargados:', userData);
         this.currentUserSubject.next(userData);
       } else {
+        // Sin usuario autenticado
         console.log('👋 No hay usuario autenticado');
         this.currentUserSubject.next(null);
       }
@@ -80,11 +216,26 @@ export class FirebaseService {
   }
 
   // ============================================
-  //  AUTENTICACIÓN
+  //  🔐 AUTENTICACIÓN
   // ============================================
 
   /**
-   * Registrar nuevo usuario (con logout automático)
+   * 📝 REGISTRAR NUEVO USUARIO
+   * ---------------------------
+   * Crea una cuenta nueva y guarda datos adicionales en Firestore.
+   * 
+   * FLUJO:
+   * 1. Activar flag de "procesando" (bloquea el auth listener)
+   * 2. Crear usuario en Firebase Auth
+   * 3. Guardar datos adicionales (nombre, rol) en Firestore
+   * 4. Cerrar sesión automáticamente
+   * 5. Desactivar flag de "procesando"
+   * 6. El usuario debe iniciar sesión manualmente
+   * 
+   * @param email - Email del nuevo usuario
+   * @param password - Contraseña (mínimo 6 caracteres)
+   * @param name - Nombre completo
+   * @returns Objeto con success y message
    */
   async registrarUsuario(
     email: string,
@@ -94,7 +245,7 @@ export class FirebaseService {
     try {
       console.log('📝 Iniciando registro para:', email);
 
-      // 🔒 ACTIVAR estado de procesando
+      // Bloquear el auth listener durante el registro
       this.procesandoRegistroSubject.next(true);
 
       // Crear usuario en Firebase Auth
@@ -106,25 +257,27 @@ export class FirebaseService {
 
       console.log('✅ Usuario creado en Auth:', userCredential.user.uid);
 
-      // Guardar datos adicionales en Firestore
+      // Preparar datos adicionales para Firestore
       const usuarioData = {
         uid: userCredential.user.uid,
         name: name,
         email: email,
-        role: 'user',
-        createdAt: Timestamp.now()
+        role: 'user',  // Por defecto todos son usuarios normales
+        createdAt: Timestamp.now()  // Fecha de creación
       };
 
+      // Guardar en la colección 'usuarios' con el UID como ID del documento
       const usuarioRef = doc(this.firestore, 'usuarios', userCredential.user.uid);
       await setDoc(usuarioRef, usuarioData);
 
       console.log('✅ Datos guardados en Firestore:', usuarioData);
 
-      // 🚪 CERRAR SESIÓN INMEDIATAMENTE
+      // Cerrar sesión inmediatamente
+      // (el usuario debe iniciar sesión manualmente después del registro)
       await signOut(this.auth);
       console.log('🔓 Sesión cerrada - usuario debe iniciar sesión manualmente');
 
-      // 🔓 DESACTIVAR estado de procesando (pequeño delay para suavidad)
+      // Desactivar el bloqueo después de un pequeño delay
       setTimeout(() => {
         this.procesandoRegistroSubject.next(false);
       }, 500);
@@ -133,19 +286,24 @@ export class FirebaseService {
 
     } catch (error: any) {
       console.error('❌ Error en registro:', error);
-      // 🔓 Desactivar estado en caso de error
+      // Desactivar bloqueo en caso de error
       this.procesandoRegistroSubject.next(false);
       return this.manejarErrorAuth(error);
     }
   }
 
   /**
-   * Iniciar sesión
+   * 🔑 INICIAR SESIÓN CON EMAIL/PASSWORD
+   * --------------------------------------
+   * @param email - Email del usuario
+   * @param password - Contraseña
+   * @returns Objeto con success y message
    */
   async login(email: string, password: string): Promise<{ success: boolean; message: string }> {
     try {
       console.log('🔐 Iniciando sesión:', email);
 
+      // Firebase Auth maneja la autenticación
       await signInWithEmailAndPassword(this.auth, email, password);
 
       console.log('✅ Sesión iniciada correctamente');
@@ -158,29 +316,37 @@ export class FirebaseService {
   }
 
   /**
-   * Iniciar sesión con Google
+   * 🔵 INICIAR SESIÓN CON GOOGLE
+   * -----------------------------
+   * Abre un popup de Google para autenticar.
+   * Si el usuario es nuevo, crea su documento en Firestore.
+   * 
+   * @returns Objeto con success y message
    */
   async loginConGoogle(): Promise<{ success: boolean; message: string }> {
     try {
       console.log('🔐 Iniciando sesión con Google...');
 
+      // Crear proveedor de Google
       const provider = new GoogleAuthProvider();
+
+      // Abrir popup de autenticación
       const userCredential = await signInWithPopup(this.auth, provider);
 
       console.log('✅ Sesión con Google iniciada:', userCredential.user.email);
 
-      // Verificar si el usuario existe en Firestore, si no, crearlo
+      // Verificar si el usuario ya existe en Firestore
       const existingUser = await this.obtenerDatosUsuario(userCredential.user.uid);
 
       if (!existingUser) {
-        // Crear usuario en Firestore con datos de Google
+        // Usuario nuevo: crear documento en Firestore
         const usuarioData = {
           uid: userCredential.user.uid,
           name: userCredential.user.displayName || 'Usuario Google',
           email: userCredential.user.email || '',
           role: 'user',
           createdAt: Timestamp.now(),
-          provider: 'google'
+          provider: 'google'  // Marcar que viene de Google
         };
 
         const usuarioRef = doc(this.firestore, 'usuarios', userCredential.user.uid);
@@ -207,7 +373,9 @@ export class FirebaseService {
   }
 
   /**
-   * Cerrar sesión
+   * 🚪 CERRAR SESIÓN
+   * -----------------
+   * Termina la sesión actual del usuario.
    */
   async logout(): Promise<void> {
     try {
@@ -220,14 +388,21 @@ export class FirebaseService {
   }
 
   /**
-   * Obtener usuario actual (síncrono)
+   * 👤 OBTENER USUARIO ACTUAL (síncrono)
+   * --------------------------------------
+   * Retorna el valor actual del usuario sin suscribirse.
+   * Útil para verificaciones rápidas.
+   * 
+   * @returns Usuario actual, null si no hay, undefined si no se ha verificado
    */
   obtenerUsuarioActual(): Usuario | null | undefined {
     return this.currentUserSubject.value;
   }
 
   /**
-   * Verificar si está autenticado
+   * ✅ VERIFICAR SI ESTÁ AUTENTICADO
+   * ---------------------------------
+   * @returns true si hay un usuario logueado
    */
   estaAutenticado(): boolean {
     const usuario = this.currentUserSubject.value;
@@ -235,7 +410,9 @@ export class FirebaseService {
   }
 
   /**
-   * Verificar si es admin (siempre true si está autenticado)
+   * 👑 VERIFICAR SI ES ADMIN
+   * -------------------------
+   * @returns true si el usuario tiene rol de administrador
    */
   esAdmin(): boolean {
     const usuario = this.currentUserSubject.value;
@@ -243,26 +420,39 @@ export class FirebaseService {
   }
 
   // ============================================
-  //  PRODUCTOS
+  //  📦 PRODUCTOS - CRUD
   // ============================================
 
+  /**
+   * 📋 OBTENER TODOS LOS PRODUCTOS
+   * -------------------------------
+   * Lee todos los documentos de la colección 'productos'.
+   * Solo funciona si hay usuario autenticado.
+   * 
+   * @returns Array de productos ordenados por fecha
+   */
   async obtenerProductos(): Promise<Producto[]> {
     try {
       const user = this.auth.currentUser;
-      if (!user) return [];
+      if (!user) return [];  // Sin usuario, sin productos
 
+      // Referencia a la colección 'productos'
       const productosRef = collection(this.firestore, 'productos');
+
+      // Crear consulta ordenada por fecha (más recientes primero)
       const q = query(
         productosRef,
         orderBy('fecha', 'desc')
       );
 
+      // Ejecutar consulta
       const snapshot = await getDocs(q);
 
+      // Mapear documentos a objetos Producto
       return snapshot.docs.map(doc => ({
         id: parseInt(doc.id) || Date.now(),
         ...doc.data(),
-        _firestoreId: doc.id
+        _firestoreId: doc.id  // Guardar el ID de Firestore para actualizaciones
       } as any));
     } catch (error) {
       console.error('Error al obtener productos:', error);
@@ -270,16 +460,24 @@ export class FirebaseService {
     }
   }
 
+  /**
+   * ➕ AGREGAR NUEVO PRODUCTO
+   * --------------------------
+   * @param producto - Datos del producto (sin ID)
+   * @returns El producto creado con su ID, o null si falla
+   */
   async agregarProducto(producto: Omit<Producto, 'id'>): Promise<Producto | null> {
     try {
       const user = this.auth.currentUser;
       if (!user) return null;
 
+      // Agregar documento con ID automático
       const docRef = await addDoc(collection(this.firestore, 'productos'), {
         ...producto,
-        createdAt: Timestamp.now()
+        createdAt: Timestamp.now()  // Fecha de creación
       });
 
+      // Retornar producto con IDs
       return {
         id: Date.now(),
         ...producto,
@@ -291,12 +489,22 @@ export class FirebaseService {
     }
   }
 
+  /**
+   * ✏️ ACTUALIZAR PRODUCTO EXISTENTE
+   * ----------------------------------
+   * @param firestoreId - ID del documento en Firestore
+   * @param producto - Campos a actualizar
+   * @returns true si se actualizó correctamente
+   */
   async actualizarProducto(
     firestoreId: string,
     producto: Partial<Producto>
   ): Promise<boolean> {
     try {
+      // Obtener referencia al documento
       const docRef = doc(this.firestore, 'productos', firestoreId);
+
+      // Actualizar campos
       await updateDoc(docRef, { ...producto });
       return true;
     } catch (error) {
@@ -305,6 +513,12 @@ export class FirebaseService {
     }
   }
 
+  /**
+   * 🗑️ ELIMINAR PRODUCTO
+   * ----------------------
+   * @param firestoreId - ID del documento en Firestore
+   * @returns true si se eliminó correctamente
+   */
   async eliminarProducto(firestoreId: string): Promise<boolean> {
     try {
       const docRef = doc(this.firestore, 'productos', firestoreId);
@@ -317,13 +531,23 @@ export class FirebaseService {
   }
 
   // ============================================
-  //  CATEGORÍAS
+  //  📂 CATEGORÍAS - CRUD
   // ============================================
 
+  /**
+   * 📋 OBTENER TODAS LAS CATEGORÍAS
+   * ---------------------------------
+   * Si el usuario no está autenticado, retorna categorías por defecto.
+   * Si no hay categorías en Firestore, las crea automáticamente.
+   * 
+   * @returns Array de categorías
+   */
   async obtenerCategorias(): Promise<Categoria[]> {
     try {
       const user = this.auth.currentUser;
+
       if (!user) {
+        // Sin usuario: retornar categorías por defecto
         return [
           { id: 1, nombre: 'Electrónica', color: '#3b82f6' },
           { id: 2, nombre: 'Ropa', color: '#ec4899' },
@@ -332,14 +556,17 @@ export class FirebaseService {
         ];
       }
 
+      // Obtener categorías de Firestore
       const categoriasRef = collection(this.firestore, 'categorias');
       const q = query(categoriasRef);
       const snapshot = await getDocs(q);
 
+      // Si no hay categorías, crear las por defecto
       if (snapshot.empty) {
         return await this.crearCategoriasDefecto(user.uid);
       }
 
+      // Mapear documentos a objetos Categoria
       return snapshot.docs.map(doc => ({
         id: parseInt(doc.id) || Date.now(),
         ...doc.data(),
@@ -351,6 +578,15 @@ export class FirebaseService {
     }
   }
 
+  /**
+   * 🏗️ CREAR CATEGORÍAS POR DEFECTO
+   * ---------------------------------
+   * Se ejecuta la primera vez que un usuario accede
+   * y no tiene categorías creadas.
+   * 
+   * @param userId - UID del usuario
+   * @returns Array de categorías creadas
+   */
   private async crearCategoriasDefecto(userId: string): Promise<Categoria[]> {
     const categoriasDefecto = [
       { nombre: 'Electrónica', color: '#3b82f6' },
@@ -361,6 +597,7 @@ export class FirebaseService {
 
     const categorias: Categoria[] = [];
 
+    // Crear cada categoría en Firestore
     for (const cat of categoriasDefecto) {
       const docRef = await addDoc(collection(this.firestore, 'categorias'), {
         ...cat,
@@ -377,6 +614,12 @@ export class FirebaseService {
     return categorias;
   }
 
+  /**
+   * ➕ AGREGAR NUEVA CATEGORÍA
+   * ---------------------------
+   * @param categoria - Datos de la categoría (sin ID)
+   * @returns La categoría creada, o null si falla
+   */
   async agregarCategoria(categoria: Omit<Categoria, 'id'>): Promise<Categoria | null> {
     try {
       const user = this.auth.currentUser;
@@ -398,6 +641,13 @@ export class FirebaseService {
     }
   }
 
+  /**
+   * ✏️ ACTUALIZAR CATEGORÍA EXISTENTE
+   * -----------------------------------
+   * @param firestoreId - ID del documento en Firestore
+   * @param categoria - Campos a actualizar
+   * @returns true si se actualizó correctamente
+   */
   async actualizarCategoria(
     firestoreId: string,
     categoria: Partial<Categoria>
@@ -412,6 +662,12 @@ export class FirebaseService {
     }
   }
 
+  /**
+   * 🗑️ ELIMINAR CATEGORÍA
+   * -----------------------
+   * @param firestoreId - ID del documento en Firestore
+   * @returns true si se eliminó correctamente
+   */
   async eliminarCategoria(firestoreId: string): Promise<boolean> {
     try {
       const docRef = doc(this.firestore, 'categorias', firestoreId);
@@ -424,24 +680,38 @@ export class FirebaseService {
   }
 
   // ============================================
-  //  MÉTODOS PRIVADOS
+  //  👤 MÉTODOS PRIVADOS
   // ============================================
 
+  /**
+   * 🔍 OBTENER DATOS DEL USUARIO DESDE FIRESTORE
+   * ----------------------------------------------
+   * Busca los datos adicionales del usuario (nombre, rol, foto)
+   * en la colección 'usuarios'.
+   * 
+   * Si el usuario no existe en Firestore (puede pasar con Google),
+   * crea el documento automáticamente.
+   * 
+   * @param uid - UID del usuario de Firebase Auth
+   * @returns Objeto Usuario con todos los datos
+   */
   private async obtenerDatosUsuario(uid: string): Promise<Usuario | null> {
     try {
       console.log('🔥 Buscando datos del usuario en Firestore, UID:', uid);
 
+      // Buscar por uid en la colección 'usuarios'
       const usuariosRef = collection(this.firestore, 'usuarios');
       const q = query(usuariosRef, where('uid', '==', uid));
       const snapshot = await getDocs(q);
 
       if (!snapshot.empty) {
+        // Usuario encontrado: mapear datos
         const userData = snapshot.docs[0].data();
         console.log('✅ Datos encontrados en Firestore:', userData);
 
         return {
           username: userData['email'],
-          password: '',
+          password: '',  // Nunca guardamos contraseñas
           name: userData['name'],
           email: userData['email'],
           role: (userData['role'] as 'admin' | 'user') || 'user',
@@ -449,6 +719,7 @@ export class FirebaseService {
         };
       }
 
+      // Usuario no encontrado: crear documento
       const authUser = this.auth.currentUser;
       if (authUser) {
         console.warn('⚠️ Usuario no encontrado en Firestore, creando documento...');
@@ -462,6 +733,7 @@ export class FirebaseService {
           photoURL: authUser.photoURL || ''
         };
 
+        // Crear documento con UID como ID
         const usuarioRef = doc(this.firestore, 'usuarios', authUser.uid);
         await setDoc(usuarioRef, nuevoUsuario);
 
@@ -482,6 +754,7 @@ export class FirebaseService {
     } catch (error) {
       console.error('❌ Error al obtener datos de usuario:', error);
 
+      // Fallback: usar datos de Auth si falla Firestore
       const authUser = this.auth.currentUser;
       if (authUser) {
         console.warn('⚠️ Usando datos de Auth como fallback');
@@ -500,11 +773,16 @@ export class FirebaseService {
   }
 
   // ============================================
-  //  FOTO DE PERFIL
+  //  👤 FOTO DE PERFIL
   // ============================================
 
   /**
-   * Actualizar foto de perfil del usuario
+   * 📷 ACTUALIZAR FOTO DE PERFIL
+   * -----------------------------
+   * Guarda la URL de la foto en Firestore y actualiza el estado local.
+   * 
+   * @param photoURL - URL de la imagen (de ImgBB u otro servicio)
+   * @returns Objeto con success y message
    */
   async actualizarFotoPerfil(photoURL: string): Promise<{ success: boolean; message: string }> {
     try {
@@ -519,7 +797,7 @@ export class FirebaseService {
       const usuarioRef = doc(this.firestore, 'usuarios', user.uid);
       await updateDoc(usuarioRef, { photoURL });
 
-      // Actualizar el estado local
+      // Actualizar el estado local (BehaviorSubject)
       const currentUser = this.currentUserSubject.value;
       if (currentUser) {
         this.currentUserSubject.next({
@@ -538,7 +816,11 @@ export class FirebaseService {
   }
 
   /**
-   * Eliminar foto de perfil
+   * 🗑️ ELIMINAR FOTO DE PERFIL
+   * ---------------------------
+   * Quita la foto de perfil del usuario.
+   * 
+   * @returns Objeto con success y message
    */
   async eliminarFotoPerfil(): Promise<{ success: boolean; message: string }> {
     try {
@@ -549,9 +831,11 @@ export class FirebaseService {
 
       console.log('🗑️ Eliminando foto de perfil');
 
+      // Establecer photoURL vacío en Firestore
       const usuarioRef = doc(this.firestore, 'usuarios', user.uid);
       await updateDoc(usuarioRef, { photoURL: '' });
 
+      // Actualizar estado local
       const currentUser = this.currentUserSubject.value;
       if (currentUser) {
         this.currentUserSubject.next({
@@ -569,6 +853,19 @@ export class FirebaseService {
     }
   }
 
+  // ============================================
+  //  ❌ MANEJO DE ERRORES
+  // ============================================
+
+  /**
+   * 🔧 CONVERTIR ERRORES DE FIREBASE A MENSAJES LEGIBLES
+   * ------------------------------------------------------
+   * Firebase retorna códigos de error en inglés.
+   * Este método los convierte a mensajes amigables en español.
+   * 
+   * @param error - Error de Firebase
+   * @returns Objeto con success: false y mensaje en español
+   */
   private manejarErrorAuth(error: any): { success: boolean; message: string } {
     let mensaje = 'Error desconocido';
 
