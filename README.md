@@ -372,7 +372,7 @@ firebase deploy --only hosting
 
 ### 🔗 URL del Video
 ```
-📹 [INSERTAR URL DEL VIDEO AQUÍ]
+📹 https://drive.google.com/file/d/1oN7TZnBZevtY8p2xOr4Z_dvcghm71DDY/view?usp=sharing
 ```
 
 ### Contenido del Video (5-8 minutos)
@@ -580,18 +580,3 @@ Para consultas sobre el proyecto:
 - **GitHub**: https://github.com/jher10026/Invetario_pro.git
 - **Email**: 1002620232@unajma.edu.pe
 
----
-
-## 🎯 Próximas Mejoras
-
-- [ ] Implementar modo oscuro
-- [ ] Agregar exportación de reportes a Excel
-- [ ] Integrar notificaciones push
-- [ ] Implementar búsqueda avanzada con filtros múltiples
-- [ ] Agregar gráficos interactivos adicionales
-- [ ] Implementar sistema de permisos más granular
-- [ ] Agregar historial de cambios en productos
-
----
-
-**Desarrollado con ❤️ usando Angular y Firebase**
