@@ -122,36 +122,50 @@ Los archivos compilados estarán en: `dist/inventario_pro1/browser`
 
 ```
 src/app/
-├── components/           # Componentes de la aplicación
-│   ├── login/           # Autenticación de usuarios
-│   ├── dashboard/       # Panel principal
-│   ├── inventario/      # Gestión de productos
-│   ├── categorias/      # Gestión de categorías
-│   ├── reportes/        # Generación de reportes
-│   └── shared/          # Componentes compartidos
-│       ├── header/      # Cabecera de la app
-│       ├── sidebar/     # Menú lateral
-│       └── toast/       # Notificaciones
-├── services/            # Servicios de la aplicación
-│   ├── firebase.service.ts      # Conexión con Firebase
-│   ├── productos.service.ts     # Lógica de productos
-│   ├── categorias.service.ts    # Lógica de categorías
-│   ├── reportes.service.ts      # Generación de reportes
-│   ├── notification.service.ts  # Sistema de notificaciones
-│   └── storage.service.ts       # Gestión de almacenamiento
-├── guards/              # Protección de rutas
-│   ├── auth.guard.ts    # Verificación de autenticación
-│   └── role.guard.ts    # Verificación de roles
-├── models/              # Interfaces y tipos
-│   ├── producto.model.ts
-│   ├── categoria.model.ts
-│   ├── usuario.model.ts
-│   ├── estadisticas.model.ts
-│   └── reporte.model.ts
-├── config/              # Configuraciones
-│   └── firebase.config.ts
-├── app.routes.ts        # Definición de rutas
-└── app.config.ts        # Configuración de la app
+├── components/                    # Componentes de la aplicación
+│   ├── login/                    # Autenticación de usuarios
+│   ├── dashboard/                # Panel principal con estadísticas
+│   ├── inventario/               # Gestión de productos (CRUD)
+│   ├── categorias/               # Gestión de categorías
+│   ├── reportes/                 # Generación de reportes y gráficos
+│   ├── not-found/                # Página 404
+│   └── shared/                   # Componentes compartidos
+│       ├── header/               # Cabecera de la app
+│       ├── sidebar/              # Menú lateral de navegación
+│       ├── toast/                # Notificaciones toast
+│       ├── avatar-modal/         # Modal para gestión de avatar
+│       └── notification-panel/   # Panel de notificaciones en tiempo real
+├── services/                      # Servicios de la aplicación
+│   ├── firebase.service.ts       # Conexión y operaciones con Firebase
+│   ├── productos.service.ts      # Lógica de gestión de productos
+│   ├── categorias.service.ts     # Lógica de gestión de categorías
+│   ├── reportes.service.ts       # Generación de reportes
+│   ├── notification.service.ts   # Sistema de notificaciones toast
+│   ├── realtime-notifications.service.ts  # Notificaciones en tiempo real
+│   ├── imgbb.service.ts          # Servicio para subir imágenes a ImgBB
+│   └── storage.service.ts        # Gestión de almacenamiento local
+├── guards/                        # Protección de rutas
+│   ├── auth.guard.ts             # Verificación de autenticación
+│   └── role.guard.ts             # Verificación de roles de usuario
+├── models/                        # Interfaces y tipos de datos
+│   ├── producto.model.ts         # Modelo de producto
+│   ├── categoria.model.ts        # Modelo de categoría
+│   ├── usuario.model.ts          # Modelo de usuario
+│   ├── estadisticas.model.ts     # Modelo de estadísticas
+│   ├── reporte.model.ts          # Modelo de reporte
+│   └── notificacion.model.ts     # Modelo de notificación
+├── pipes/                         # Pipes personalizados
+│   ├── moneda-pie.pipe.ts        # Formateo de moneda
+│   ├── resaltar.pipe.ts          # Resaltado de texto en búsquedas
+│   ├── stock-estado.pipe.ts      # Estado del stock (disponible/bajo/agotado)
+│   └── tiempo-transcurrido.pipe.ts  # Tiempo transcurrido (hace X minutos)
+├── config/                        # Configuraciones
+│   └── firebase.config.ts        # Credenciales de Firebase
+├── app.routes.ts                  # Definición de rutas de la app
+├── app.config.ts                  # Configuración principal de Angular
+├── app.ts                         # Componente raíz de la aplicación
+├── app.html                       # Template del componente raíz
+└── app.css                        # Estilos del componente raíz
 ```
 
 ### Componentes Principales
